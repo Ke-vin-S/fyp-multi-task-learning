@@ -14,11 +14,6 @@ fyp/
 └── LibMTL/        Reference MTL library
 ```
 
-## Benchmarks
-
-1. **Pass wavCSE** — parameter-based MTL must beat the feature-learning approach
-2. **Pass single-task baselines** — prove multi-task training is better than isolated models
-
 ## People
 
 - **Supervisor:** Dr. Uthayasanker Thayasivam
