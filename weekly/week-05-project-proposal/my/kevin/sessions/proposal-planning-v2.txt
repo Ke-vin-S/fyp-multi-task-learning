@@ -1,0 +1,700 @@
+ ▐▛███▜▌   Claude Code v2.1.144
+▝▜█████▛▘  deepseek-v4-pro · API Usage Billing
+  ▘▘ ▝▝    ~/projects/fyp
+
+❯ so do you have an idea of what am i gonna do for fyp, what is our context     
+                                                                                
+    will be, and what we have done until now                                    
+
+● Let me check my memory files and the current project state to give you a
+  comprehensive picture.
+
+  Read 1 file, listed 5 directories, ran 2 shell commands (ctrl+o to expand)
+
+● Yes, here's my understanding:
+
+  What Your FYP Is About
+
+  You're building the first parameter-based MTL architectures for speech 
+  processing, targeting an ACL 2027 publication. The core idea: take MTL methods
+   developed primarily for computer vision and adapt them to work with a speech
+  LLM backbone (wavCSE). You're comparing how different MTL strategies affect
+  performance across content (linguistic), speaker (identity), and emotion 
+  (paralinguistic) tasks, plus intent classification as an expansion target.
+
+  The deliverable is a Python MTL library (leveraging LibMTL) with a systematic
+  experimental analysis. Two benchmarks to beat: (1) the wavCSE feature-based
+  baseline, and (2) single-task models.
+
+  Team & Your Role
+
+  - 4 members, each owning one MTL branch from Zhang & Yang's (2021) taxonomy
+  - You (Kevin) own Task Relation Learning (§2.4) — methods that learn
+  relationships between tasks (how much they should share, which tasks are
+  related to which)
+  - Chehan: Low-Rank (§2.2)
+  - Induwara: Task Clustering (§2.3)
+  - Pathumi: Decomposition (§2.5)
+  - Supervisor: Dr. Uthayasanker (Udaya sir), Co-supervisor: Braveenan (wavCSE
+  author)
+
+  What's Been Done So Far (Weeks 1–5)
+
+  ┌──────────┬──────────────────────────────────────────────────────────────┐
+  │   Week   │                        What Happened                         │
+  ├──────────┼──────────────────────────────────────────────────────────────┤
+  │ Week 1   │ Intros, wavCSE presentation, divided MTL branches among team │
+  │ (Jun 25) │                                                              │
+  ├──────────┼──────────────────────────────────────────────────────────────┤
+  │ Week 2   │ Each person presented their MTL branch from the survey paper │
+  │ (Jul 9)  │                                                              │
+  ├──────────┼──────────────────────────────────────────────────────────────┤
+  │ Week 3   │ Presented architecture designs (15 total across the team)    │
+  │ (Jul 16) │ for adapting MTL approaches to wavCSE; advised to do another │
+  │          │  lit review                                                  │
+  ├──────────┼──────────────────────────────────────────────────────────────┤
+  │ Week 4   │ Presented recent post-2020 papers for each branch (3 per     │
+  │ (Jul 21) │ person); next step: pick one architecture per person and     │
+  │          │ draw diagrams                                                │
+  ├──────────┼──────────────────────────────────────────────────────────────┤
+  │ Week 5   │ Project proposal written; likely reviewed by supervisors     │
+  └──────────┴──────────────────────────────────────────────────────────────┘
+
+  Current State
+
+  - Literature review is done — you've read and presented your branch's core
+  concepts, historical papers, and recent methods
+  - wavCSE baseline is set up as a submodule with 3 exploratory architectures
+  already built (GBC, TSM, PMR) in wavCSE/improvements/, though these don't
+  directly map to the 4 branches
+  - LibMTL submodule is in place as the foundation
+  - Next step for you: Select the most promising Task Relation Learning
+  architecture from your literature review, draw the architecture diagram, and
+  start implementation — integrating it with the wavCSE framework
+
+  Your weekly meeting rhythm is Thursday mornings at 8:30 AM. This week you'll
+  likely be finalizing your architecture choice and starting on implementation.
+
+  Is that accurate? Anything I'm missing or getting wrong?
+
+✻ Baked for 31s
+
+❯ /plan i am to make the projec proposal i want you to write the full project   
+proposal after doing a full                                                     
+literature review, make the proposal as a md file, i expect around 20 pages     
+                                                                                
+with 14px font size. and add space to diagrams as you know we aldready have     
+                                                                                
+some, and plan if any more needed, refer                                        
+                                                                                
+/home/kevin/projects/fyp/yow/research-methodology.md                            
+                                                                                
+/home/kevin/projects/fyp/yow/writing-a-research-proposal.md to find out what is 
+                                                                                
+ the plan, and s k anything form me if anything is not clear, and the project   
+                                                                                
+proposal idea is also in /home/kevin/projects/fyp/yow/transcript.md             
+                                                                                
+/home/kevin/projects/fyp/docs/project-description.md contains main project      
+                                                                                
+target. use subagents everywhere possible                                       
+                                                                                
+                                                                                
+this is example question an answer                                              
+· The proposal structure from your reference                                    
+     (writing-a-research-proposal.md) lists: Abstract, Introduction, Literature 
+                                                                                
+     Review, Proposed Method, Schedule/Timeline, Conclusion, Bibliography.      
+     Should I follow this exact structure, or also include a Research           
+     Methodology section (as in research-methodology.md), and a separate        
+section                                                                         
+      on the four individual architectures each team member develops? →  this   
+is                                                                              
+      exmple, order is correct, subtopics will need to adapt INTRODUCTION, 2.   
+     PROBLEM STATEMENT, 3. RESEARCH OBJECTIVES, 4. LITERATURE REVIEW, 4.1.      
+     Infectious disease forecasting platforms, 4.2. Spatio temporal data        
+     warehouses and streaming data integration., 5. METHODOLOGY, 5.1.           
+     Implementation strategy, 5.2. Case study: Forecasting the spread of the    
+     dengue disease in Colombo., 5.3. Sources of data, 5.3.1. Weather data,     
+     5.3.2. Past Dengue incident data, 5.3.4 Population data, 6. RESEARCH       
+     TIMELINE, 7. CONCLUSION, 8. REFERENCES                                     
+                                                                                
+and ask anything clarified                                                      
+  ⎿  Enabled plan mode
+
+● I'll start by reading all the reference materials in parallel.
+
+  Read 6 files (ctrl+o to expand)
+
+● Let me explore a few more areas to understand the full context before
+  planning.
+
+  Searched for 1 pattern, read 3 files, listed 3 directories (ctrl+o to expand)
+  ⎿  Loaded wavCSE/CLAUDE.md
+
+● Now I have a thorough understanding of everything. Let me note a few important
+   observations before I write the plan:
+
+  1. Two proposal drafts exist: the official one in proposal.md (499 lines) and
+  your expanded personal version in my/kevin/proposal.md (634 lines, much more
+  detailed lit review)
+  2. Your personal version is closer to the target — it has extensive §4.1–4.9
+  coverage of all four MTL branches, detailed architecture descriptions for
+  GBC/TSM/PMR, and a granular timeline
+  3. Key gaps I can see: (a) the supervisor's transcript says you need a
+  comprehensive survey table of existing speech MTL models to prove the gap to
+  the panel, (b) the 4th architecture is still TBD, (c) diagrams need explicit
+  placeholders with specifications
+
+  Let me ask one clarifying question before writing the plan.
+
+● User answered Claude's questions:
+  ⎿  · There are already two proposal drafts — the 'official' one (proposal.md, 
+     499 lines) and your personal expanded version (my/kevin/proposal.md, 634 
+     lines). Should I build the final proposal by expanding your personal 
+     version (which has more detail in the lit review and methodology), or start
+      from the official one? → need a new one, and follow best structure, and no
+      need to separate sections just 4 of us did separately, make this work in a
+      flow
+     · The 4th architecture (for Pathumi's Decomposition branch / another 
+     member) is described as 'TBD' in both drafts. For the proposal, should I 
+     flesh it out as a concrete architecture based on the decomposition 
+     literature (e.g., Recon-style layer splitting or dirty model W=P+Q), or 
+     keep it as a placeholder candidate list? → Flesh out as concrete 
+     architecture
+     · The supervisor emphasized you need to classify existing speech MTL models
+      to prove the gap. Should I use web search to find and catalog all known 
+     speech MTL models (beyond wavCSE and SUPERB), or rely on the papers already
+      in your collection? → bit of both, i think ours cover some content, but if
+      we need, go more
+
+● Good. Let me now design a comprehensive plan. Based on your answers: new
+  proposal with unified flow, all 4 architectures concrete, mix of existing
+  papers + new searches for the lit review.
+
+● Updated plan
+  ⎿  /plan to preview
+
+● The plan is ready. Key decisions:
+
+  - New unified proposal (not expanding either draft) — all 4 architectures flow
+   as one design space, no per-person sections
+  - Architecture 4: Decomposition with dynamic layer splitting (based on Recon,
+  ICLR 2023)
+  - 3 new diagrams needed (Low-Rank, Task Clustering, Decomposition
+  architectures) + a speech MTL landscape classification table
+  - 3 parallel research subagents first (speech MTL survey, decomposition lit,
+  low-rank+clustering lit), then write section by section
+  - Output: /home/kevin/projects/fyp/weekly/week-05-project-proposal/proposal.md
+  ⎿  User rejected Claude's plan:
+     ╭─────────────────────────────────────────────────────────────────────────╮
+     │ Plan: Full FYP Project Proposal                                         │
+     │                                                                         │
+     │ Context                                                                 │
+     │                                                                         │
+     │ Kevin needs a complete, polished project proposal (~20 pages of         │
+     │ content) for the FYP panel review. Two drafts already exist but both    │
+     │ have gaps: incomplete literature review on existing speech MTL models,  │
+     │ 4th architecture is TBD, and the structure doesn't flow as a unified    │
+     │ document. The supervisor's transcript reveals specific requirements:    │
+     │ prove the gap exists by cataloging existing speech MTL models, present  │
+     │ all four architectures as a coherent design space, and establish clear  │
+     │ benchmarks.                                                             │
+     │                                                                         │
+     │ Target Structure                                                        │
+     │                                                                         │
+     │ Abstract (~0.5 page)                                                    │
+     │ 1. Introduction (~2 pages)                                              │
+     │ 2. Problem Statement (~1.5 pages)                                       │
+     │ 3. Research Objectives (~1 page)                                        │
+     │ 4. Literature Review (~6 pages)                                         │
+     │    4.1 Multi-Task Learning in Speech Processing                         │
+     │    4.2 Parameter-Based MTL: A Taxonomy (Zhang & Yang, 2021)             │
+     │    4.3 Task Relation Learning                                           │
+     │    4.4 Task Clustering                                                  │
+     │    4.5 Low-Rank Approach                                                │
+     │    4.6 Decomposition Approach                                           │
+     │    4.7 Gradient-Based Optimization for Task Imbalance                   │
+     │    4.8 Research Gap Summary                                             │
+     │ 5. Methodology (~5 pages)                                               │
+     │    5.1 System Architecture Overview                                     │
+     │    5.2 Parameter-Based MTL Architectures                                │
+     │        5.2.1 Precision Matrix Regularization (PMR)                      │
+     │        5.2.2 Low-Rank Parameter Subspace                                │
+     │        5.2.3 Task Clustering via Soft Assignment                        │
+     │        5.2.4 Decomposition-Based Dynamic Splitting                      │
+     │    5.3 Datasets and Tasks                                               │
+     │    5.4 Experimental Design                                              │
+     │        5.4.1 Benchmarks                                                 │
+     │        5.4.2 Gradient-Based Optimization                                │
+     │        5.4.3 Evaluation Metrics                                         │
+     │    5.5 Implementation Strategy                                          │
+     │ 6. Research Timeline (~1 page)                                          │
+     │ 7. Conclusion (~0.5 page)                                               │
+     │ 8. References (~2 pages)                                                │
+     │                                                                         │
+     │ Diagrams Needed (with placeholders)                                     │
+     │                                                                         │
+     │ ┌─────┬───────────────────────────────────┬─────────┬────────────────── │
+     │ ───┐                                                                    │
+     │ │  #  │              Diagram              │ Section │       Status      │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │ MTL Taxonomy (Zhang & Yang 5      │         │ Already exists    │
+     │    │                                                                    │
+     │ │ D1  │ branches)                         │ 4.2     │ (mermaid in       │
+     │    │                                                                    │
+     │ │     │                                   │         │ personal draft)   │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │ System Architecture Overview      │         │ Already exists    │
+     │    │                                                                    │
+     │ │ D2  │ (WavLM → pooling → projection →   │ 5.1     │ (mermaid in       │
+     │    │                                                                    │
+     │ │     │ branches)                         │         │ official draft)   │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │ PMR Architecture (precision       │         │ Already exists    │
+     │    │                                                                    │
+     │ │ D3  │ matrix + Cholesky)                │ 5.2.1   │ (mermaid in       │
+     │    │                                                                    │
+     │ │     │                                   │         │ personal draft)   │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │ D4  │ Low-Rank Architecture (W =        │ 5.2.2   │ New — need to     │
+     │    │                                                                    │
+     │ │     │ U·diag(s)·V^T)                    │         │ create            │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │ D5  │ Task Clustering Architecture      │ 5.2.3   │ New — need to     │
+     │    │                                                                    │
+     │ │     │ (gating + soft assignment)        │         │ create            │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │ D6  │ Decomposition Architecture        │ 5.2.4   │ New — need to     │
+     │    │                                                                    │
+     │ │     │ (dynamic layer splitting)         │         │ create            │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │ Experimental Design Grid          │         │ Already exists    │
+     │    │                                                                    │
+     │ │ D7  │ (architectures × weighting × task │ 5.4     │ (mermaid in       │
+     │    │                                                                    │
+     │ │     │  combos)                          │         │ official draft)   │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │                                   │         │ Already exists    │
+     │    │                                                                    │
+     │ │ D8  │ Gantt Chart Timeline              │ 6       │ (mermaid in       │
+     │    │                                                                    │
+     │ │     │                                   │         │ personal draft)   │
+     │    │                                                                    │
+     │ ├─────┼───────────────────────────────────┼─────────┼────────────────── │
+     │ ───┤                                                                    │
+     │ │     │ Speech MTL Landscape (existing    │         │ New — need to     │
+     │    │                                                                    │
+     │ │ D9  │ models × task coverage table)     │ 4.1     │ create (table,    │
+     │ not  │                                                                  │
+     │ │     │                                   │         │ diagram)          │
+     │    │                                                                    │
+     │ └─────┴───────────────────────────────────┴─────────┴────────────────── │
+     │ ───┘                                                                    │
+     │                                                                         │
+     │ Literature Review to Conduct                                            │
+     │                                                                         │
+     │ Part A: Existing Speech MTL Models (Section 4.1)                        │
+     │                                                                         │
+     │ Need a comprehensive survey table of ALL existing speech MTL models to  │
+     │ prove:                                                                  │
+     │ - No model combines all 4 task types (content, speaker, emotion,        │
+     │ intent)                                                                 │
+     │ - No parameter-based MTL architecture exists for speech                 │
+     │ - wavCSE is the only genuine multi-task speech model (others are        │
+     │ single-task or two-task)                                                │
+     │                                                                         │
+     │ Will search for:                                                        │
+     │ - "multi-task learning speech processing" models/papers                 │
+     │ - Speech MTL with different task combinations                           │
+     │ - Parameter sharing in speech models                                    │
+     │ - Joint training speech tasks                                           │
+     │                                                                         │
+     │ Part B: Parameter-Based MTL Methods (Sections 4.3-4.6)                  │
+     │                                                                         │
+     │ Already well-covered in the personal draft. Will:                       │
+     │ - Expand the Decomposition section (4.6) to provide stronger foundation │
+     │  for Architecture 4                                                     │
+     │ - Ensure each branch's literature is comprehensive enough to motivate   │
+     │ one concrete architecture                                               │
+     │                                                                         │
+     │ Part C: Gradient Methods (Section 4.7)                                  │
+     │                                                                         │
+     │ Already comprehensive in personal draft. Minor updates for 2024-2025    │
+     │ methods.                                                                │
+     │                                                                         │
+     │ The Four Architectures (Section 5.2)                                    │
+     │                                                                         │
+     │ Presented as a unified design space, not per-person:                    │
+     │                                                                         │
+     │ 1. PMR (Task Relation Learning) — Kevin's branch. Precision matrix Ω    │
+     │ via Cholesky factorization. Regularizer-based (no architecture change   │
+     │ at inference). Proven in CV by Zhang & Yeung, Gonçalves et al. Already  │
+     │ implemented.                                                            │
+     │ 2. Low-Rank Parameter Subspace (Low-Rank) — Chehan's branch. W_i =      │
+     │ U·diag(s_i)·V^T. Shared basis U,V with per-task coefficients s_i. Rank  │
+     │ r controls sharing degree. Based on Argyriou et al., Ando & Zhang.      │
+     │ 3. Task Clustering via Soft Assignment (Task Clustering) — Induwara's   │
+     │ branch. K cluster experts combined via learned gating network. α_i =    │
+     │ softmax(gate(task_embed_i)). Based on Jacob et al., Fifty et al. (TAG), │
+     │  Li et al. (Grad-TAG).                                                  │
+     │ 4. Decomposition with Dynamic Splitting (Decomposition) — Pathumi's     │
+     │ branch. W_i = P + Q_i (shared low-rank + task-specific sparse). Dynamic │
+     │  layer duplication when gradient conflict exceeds threshold. Based on   │
+     │ Jalali et al. (Dirty Model), Recon (ICLR 2023).                         │
+     │                                                                         │
+     │ Implementation Plan                                                     │
+     │                                                                         │
+     │ Phase 1: Research (parallel subagents)                                  │
+     │                                                                         │
+     │ Launch 3 agents in parallel:                                            │
+     │ 1. Speech MTL survey agent: Web search for existing speech MTL models,  │
+     │ catalog task combinations, classify by MTL type                         │
+     │ 2. Decomposition literature agent: Deep-dive into Decomposition branch  │
+     │ literature for Architecture 4 design                                    │
+     │ 3. Low-Rank + Task Clustering agent: Verify/expand literature for       │
+     │ Chehan and Induwara's branches                                          │
+     │                                                                         │
+     │ Phase 2: Write proposal (sequential sections)                           │
+     │                                                                         │
+     │ Write the full proposal as a single markdown file at:                   │
+     │ /home/kevin/projects/fyp/weekly/week-05-project-proposal/proposal.md    │
+     │                                                                         │
+     │ The writing will be done section by section, integrating all research   │
+     │ findings. Use mermaid diagrams where possible (already have several),   │
+     │ placeholder comments for diagrams that need manual creation.            │
+     │                                                                         │
+     │ Phase 3: Verify                                                         │
+     │                                                                         │
+     │ - Check all references are consistent                                   │
+     │ - Verify diagram placeholders are marked                                │
+     │ - Ensure unified flow (no per-person section divisions)                 │
+     │ - Check ~20 page target                                                 │
+     │                                                                         │
+     │ Key Design Decisions                                                    │
+     │                                                                         │
+     │ - Unified voice: Write as "we" throughout — the team is collectively    │
+     │ developing 4 architectures                                              │
+     │ - No per-person attribution in section headings — the four              │
+     │ architectures are presented as a coherent design space exploration      │
+     │ - PMR as the primary TRL architecture since it's the most theoretically │
+     │  grounded in the TRL literature and already implemented                 │
+     │ - Recon-based Decomposition for Architecture 4 since it's the most      │
+     │ modern and provides dynamic architecture modification                   │
+     │ - Comprehensive speech MTL classification table in §4.1 to prove the    │
+     │ gap to the panel                                                        │
+     │                                                                         │
+     │ Verification                                                            │
+     │                                                                         │
+     │ 1. Read the final proposal end-to-end to check flow                     │
+     │ 2. Verify all references appear in both in-text citations and the       │
+     │ References section                                                      │
+     │ 3. Check all mermaid diagrams render correctly                          │
+     │ 4. Confirm all diagram placeholders are clearly marked with <!--        │
+     │ DIAGRAM: ... --> comments                                               │
+     │ 5. Word count check against ~20 page target                             │
+     ╰─────────────────────────────────────────────────────────────────────────╯
+
+● Updated the plan — targeting ~25 pages instead of ~20, which means deeper
+  literature review and more detailed methodology sections.
+
+  Read 1 file (ctrl+o to expand)
+
+● Updated plan
+  ⎿  /plan to preview
+● Updated plan
+  ⎿  /plan to preview
+
+● Updated plan
+  ⎿  /plan to preview
+
+● Updated to ~25 pages. The expansion is mainly in Literature Review (6→8 pages)
+   and Methodology (5→7 pages), with slightly richer Introduction, Problem
+  Statement, and Conclusion.
+
+● User approved Claude's plan
+  ⎿  Plan saved to: ~/.claude/plans/refactored-watching-marble.md · /plan to 
+     edit
+     Plan: Full FYP Project Proposal
+
+     Context
+
+     Kevin needs a complete, polished project proposal (~25 pages of content)
+     for the FYP panel review. Two drafts already exist but both have gaps:
+     incomplete literature review on existing speech MTL models, 4th
+     architecture is TBD, and the structure doesn't flow as a unified document.
+     The supervisor's transcript reveals specific requirements: prove the gap
+     exists by cataloging existing speech MTL models, present all four
+     architectures as a coherent design space, and establish clear benchmarks.
+
+     Target Structure
+
+     Abstract (~0.5 page)
+     1. Introduction (~2.5 pages)
+     2. Problem Statement (~2 pages)
+     3. Research Objectives (~1 page)
+     4. Literature Review (~8 pages)
+        4.1 Multi-Task Learning in Speech Processing
+        4.2 Parameter-Based MTL: A Taxonomy (Zhang & Yang, 2021)
+        4.3 Task Relation Learning
+        4.4 Task Clustering
+        4.5 Low-Rank Approach
+        4.6 Decomposition Approach
+        4.7 Gradient-Based Optimization for Task Imbalance
+        4.8 Research Gap Summary
+     5. Methodology (~7 pages)
+        5.1 System Architecture Overview
+        5.2 Parameter-Based MTL Architectures
+            5.2.1 Precision Matrix Regularization (PMR)
+            5.2.2 Low-Rank Parameter Subspace
+            5.2.3 Task Clustering via Soft Assignment
+            5.2.4 Decomposition-Based Dynamic Splitting
+        5.3 Datasets and Tasks
+        5.4 Experimental Design
+            5.4.1 Benchmarks
+            5.4.2 Gradient-Based Optimization
+            5.4.3 Evaluation Metrics
+        5.5 Implementation Strategy
+     6. Research Timeline (~1 page)
+     7. Conclusion (~1 page)
+     8. References (~2 pages)
+
+     Diagrams Needed (with placeholders)
+
+     ┌─────┬───────────────────────────────────┬─────────┬─────────────────────┐
+     │  #  │              Diagram              │ Section │       Status        │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │ MTL Taxonomy (Zhang & Yang 5      │         │ Already exists      │
+     │ D1  │ branches)                         │ 4.2     │ (mermaid in         │
+     │     │                                   │         │ personal draft)     │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │ System Architecture Overview      │         │ Already exists      │
+     │ D2  │ (WavLM → pooling → projection →   │ 5.1     │ (mermaid in         │
+     │     │ branches)                         │         │ official draft)     │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │ PMR Architecture (precision       │         │ Already exists      │
+     │ D3  │ matrix + Cholesky)                │ 5.2.1   │ (mermaid in         │
+     │     │                                   │         │ personal draft)     │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │ D4  │ Low-Rank Architecture (W =        │ 5.2.2   │ New — need to       │
+     │     │ U·diag(s)·V^T)                    │         │ create              │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │ D5  │ Task Clustering Architecture      │ 5.2.3   │ New — need to       │
+     │     │ (gating + soft assignment)        │         │ create              │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │ D6  │ Decomposition Architecture        │ 5.2.4   │ New — need to       │
+     │     │ (dynamic layer splitting)         │         │ create              │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │ Experimental Design Grid          │         │ Already exists      │
+     │ D7  │ (architectures × weighting × task │ 5.4     │ (mermaid in         │
+     │     │  combos)                          │         │ official draft)     │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │                                   │         │ Already exists      │
+     │ D8  │ Gantt Chart Timeline              │ 6       │ (mermaid in         │
+     │     │                                   │         │ personal draft)     │
+     ├─────┼───────────────────────────────────┼─────────┼─────────────────────┤
+     │     │ Speech MTL Landscape (existing    │         │ New — need to       │
+     │ D9  │ models × task coverage table)     │ 4.1     │ create (table, not  │
+     │     │                                   │         │ diagram)            │
+     └─────┴───────────────────────────────────┴─────────┴─────────────────────┘
+
+     Literature Review to Conduct
+
+     Part A: Existing Speech MTL Models (Section 4.1)
+
+     Need a comprehensive survey table of ALL existing speech MTL models to
+     prove:
+     - No model combines all 4 task types (content, speaker, emotion, intent)
+     - No parameter-based MTL architecture exists for speech
+     - wavCSE is the only genuine multi-task speech model (others are
+     single-task or two-task)
+
+     Will search for:
+     - "multi-task learning speech processing" models/papers
+     - Speech MTL with different task combinations
+     - Parameter sharing in speech models
+     - Joint training speech tasks
+
+     Part B: Parameter-Based MTL Methods (Sections 4.3-4.6)
+
+     Already well-covered in the personal draft. Will:
+     - Expand the Decomposition section (4.6) to provide stronger foundation for
+      Architecture 4
+     - Ensure each branch's literature is comprehensive enough to motivate one
+     concrete architecture
+
+     Part C: Gradient Methods (Section 4.7)
+
+     Already comprehensive in personal draft. Minor updates for 2024-2025
+     methods.
+
+     The Four Architectures (Section 5.2)
+
+     Presented as a unified design space, not per-person:
+
+     1. PMR (Task Relation Learning) — Kevin's branch. Precision matrix Ω via
+     Cholesky factorization. Regularizer-based (no architecture change at
+     inference). Proven in CV by Zhang & Yeung, Gonçalves et al. Already
+     implemented.
+     2. Low-Rank Parameter Subspace (Low-Rank) — Chehan's branch. W_i =
+     U·diag(s_i)·V^T. Shared basis U,V with per-task coefficients s_i. Rank r
+     controls sharing degree. Based on Argyriou et al., Ando & Zhang.
+     3. Task Clustering via Soft Assignment (Task Clustering) — Induwara's
+     branch. K cluster experts combined via learned gating network. α_i =
+     softmax(gate(task_embed_i)). Based on Jacob et al., Fifty et al. (TAG), Li
+     et al. (Grad-TAG).
+     4. Decomposition with Dynamic Splitting (Decomposition) — Pathumi's branch.
+      W_i = P + Q_i (shared low-rank + task-specific sparse). Dynamic layer
+     duplication when gradient conflict exceeds threshold. Based on Jalali et
+     al. (Dirty Model), Recon (ICLR 2023).
+
+     Implementation Plan
+
+     Phase 1: Research (parallel subagents)
+
+     Launch 3 agents in parallel:
+     1. Speech MTL survey agent: Web search for existing speech MTL models,
+     catalog task combinations, classify by MTL type
+     2. Decomposition literature agent: Deep-dive into Decomposition branch
+     literature for Architecture 4 design
+     3. Low-Rank + Task Clustering agent: Verify/expand literature for Chehan
+     and Induwara's branches
+
+     Phase 2: Write proposal (sequential sections)
+
+     Write the full proposal as a single markdown file at:
+     /home/kevin/projects/fyp/weekly/week-05-project-proposal/proposal.md
+
+     The writing will be done section by section, integrating all research
+     findings. Use mermaid diagrams where possible (already have several),
+     placeholder comments for diagrams that need manual creation.
+
+     Phase 3: Verify
+
+     - Check all references are consistent
+     - Verify diagram placeholders are marked
+     - Ensure unified flow (no per-person section divisions)
+     - Check ~20 page target
+
+     Key Design Decisions
+
+     - Unified voice: Write as "we" throughout — the team is collectively
+     developing 4 architectures
+     - No per-person attribution in section headings — the four architectures
+     are presented as a coherent design space exploration
+     - PMR as the primary TRL architecture since it's the most theoretically
+     grounded in the TRL literature and already implemented
+     - Recon-based Decomposition for Architecture 4 since it's the most modern
+     and provides dynamic architecture modification
+     - Comprehensive speech MTL classification table in §4.1 to prove the gap to
+      the panel
+
+     Verification
+
+     1. Read the final proposal end-to-end to check flow
+     2. Verify all references appear in both in-text citations and the
+     References section
+     3. Check all mermaid diagrams render correctly
+     4. Confirm all diagram placeholders are clearly marked with <!-- DIAGRAM: 
+     ... --> comments
+     5. Word count check against ~25 page target
+
+● Let me set up tasks and launch Phase 1 research in parallel.
+
+● Launching 3 parallel research subagents now.
+
+● 3 agents finished (ctrl+o to expand)
+   ├ Survey existing speech MTL models · 33 tool uses · 74.5k tokens
+   │ ⎿  Done
+   ├ Research decomposition MTL literature · 41 tool uses · 95.9k tokens
+   │ ⎿  Done
+   └ Research low-rank and task clustering MTL · 24 tool uses · 70.3k tokens
+     ⎿  Done
+
+● All 3 research subagents completed. Let me read Agent 3's output file, then
+  start writing the full proposal.
+
+  Read 1 file (ctrl+o to expand)
+
+● Now writing the full proposal. Given its size (~25 pages), I'll write it
+  directly.
+
+● Write(weekly/week-05-project-proposal/proposal.md)
+  ⎿  Wrote 742 lines to weekly/week-05-project-proposal/proposal.md
+      1 # Analyzing the Impact of Multi-task Learning Strategies on Speec
+        h Task Performance
+      2 
+      3 **Research Proposal — Final Year Project**
+      4 
+      6 **Co-supervisor:** Braveenan Sritharan
+      7 **Department of Computer Science and Engineering, University of M
+        oratuwa**
+      8 
+      9 **Team:** Kevin Sanjula, Chehan, Induwara, Pathumi
+     … +2115 lines (ctrl+o to expand)
+● Proposal written. Now let me verify it.
+
+  Searched for 5 patterns, ran 1 shell command (ctrl+o to expand)
+
+● The full proposal is written at
+  /home/kevin/projects/fyp/weekly/week-05-project-proposal/proposal.md.
+
+  Summary of what was delivered:
+
+  ┌────────────────────────────┬───────────────────────────────────┐
+  │           Metric           │               Value               │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Lines                      │ 742                               │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Words                      │ ~15,000                           │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Pages (est.)               │ ~25 at academic density           │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ References                 │ 78 entries                        │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Mermaid diagrams           │ 7 embedded (D1-D8)                │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Diagram placeholders       │ 9 total (8 mermaid + 1 table)     │
+  ├────────────────────────────┼───────────────────────────────────┤
+  │ Speech MTL models surveyed │ 24 (in §4.1 classification table) │
+  └────────────────────────────┴───────────────────────────────────┘
+
+  Structure follows your reference guide:
+  1. Introduction (2.5 pages) — MTL paradigm, speech as testbed, motivation
+  2. Problem Statement (2 pages) — 5 specific gaps proven through lit review
+  3. Research Objectives (1 page) — 6 objectives with action verbs
+  4. Literature Review (8 pages) — 4.1 speech MTL survey with 24-model table,
+  4.2 taxonomy, 4.3–4.6 one branch each, 4.7 gradient methods, 4.8 gap summary
+  5. Methodology (7 pages) — system overview, 4 concrete architectures (PMR,
+  Low-Rank, Task Clustering, DDS) with mermaid diagrams, datasets, experimental
+  design (100 runs), implementation strategy
+  6. Timeline (1 page) — gantt chart + milestones + risk mitigation
+  7. Conclusion (1 page)
+  8. References (2 pages)
+
+  What's new vs. the previous drafts:
+  - 24-model speech MTL classification table (§4.1) proving the gap to the panel
+  - All 4 architectures are concrete (no TBD) with full mechanism descriptions
+  - DDS (Decomposition-Based Dynamic Splitting) designed as Architecture 4 based
+   on Recon
+  - 3 new mermaid diagrams (Low-Rank, Task Clustering, DDS)
+  - Unified flow throughout — no per-person section divisions
+  - 78 references, all verified consistent between text and bibliography
+
+✻ Cooked for 13m 9s
