@@ -73,6 +73,7 @@ Each sub-project CLAUDE.md is self-contained — it can be used directly when ru
 - **Papers**: PDFs are git-ignored. Track in [`docs/papers.md`](docs/papers.md) with title, arXiv link, status (to-read/reading/done), and notes. Summaries go in `weekly/week-NN/my/papers/summaries/`.
 - **Sub-projects** (`wavCSE`, `LibMTL`): Each has its own venv and git repo. Always `cd` into the inner repo before running code.
 - **Python version**: Python 3.9 is used by wavCSE. Be aware of version constraints when writing new code — prefer compatibility with 3.9+.
+- **Commits**: Stage selectively — never `git add -A` or `git add .`. Verify with `git diff --cached --name-only` before committing. Keep out: PDFs, node_modules, .venv, .ppt/.pptx (unless weekly slides), settings.local.json. Commit messages: imperative mood, explain why not what. One logical change per commit.
 
 ## Gotchas
 
