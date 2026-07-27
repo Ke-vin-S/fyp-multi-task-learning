@@ -54,7 +54,11 @@
       "Read(*credentials*)",
       "Read(*secret*)",
       "Read(*password*)",
-      "Read(*token*)"
+      "Read(*token*)",
+      "Read(*sessions/*)",
+      "Read(*sessions*)",
+      "Read(proposal-planning*.txt)",
+      "Read(*-export*.txt)"
     ],
     "ask": [
       "Bash(git push *)",

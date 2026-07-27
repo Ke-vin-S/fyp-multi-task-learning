@@ -31,7 +31,26 @@ Full project scope at [`docs/project-description.md`](docs/project-description.m
 
 - **Supervisor**: Dr. Uthayasanker Thayasivam (Udaya sir)
 - **Co-supervisor**: Braveenan Sritharan (author of wavCSE, IJCNLP 2025)
-- **Team**: 4 members, each developing one parameter-based MTL architecture
+- **Team**: 4 members, each researching one MTL branch and developing one architecture
+
+| Member | MTL Branch | Architecture | Status |
+|--------|-----------|-------------|--------|
+| **Kevin** | Task Relation Learning (§2.4) | TBD | Research done, architecture TBD |
+| **Chehan** | Low-Rank Approach (§2.2) | TBD | Research done, files not yet shared |
+| **Induwara** | Task Clustering (§2.3) | TBD | Research done, files in `my/induwara/` |
+| **Pathumi** | Decomposition (§2.5) | TBD | Research done, files in `my/pathumi/` |
+
+### Research Flow
+
+The literature review was conducted in three phases across weeks 2–4, with each member focused on their assigned MTL branch:
+
+| Week | Phase | What each person did |
+|------|-------|---------------------|
+| **Week 2** | Understand the branch | Read what their MTL branch is — core concepts, key methods, how it fits in Zhang & Yang's taxonomy |
+| **Week 3** | Study survey papers | Deep-dived into the historical papers listed under their branch in Zhang & Yang (2021) §2.2–§2.5 |
+| **Week 4** | Recent advances | Searched for post-2020 papers applying their branch's ideas, identified promising methods for speech adaptation |
+
+The 3 already-implemented architectures (GBC, TSM, PMR in `wavCSE/improvements/`) were developed as a separate exploratory track and do not directly map 1:1 to the four MTL branches above. Each member will now select/design their architecture based on their branch's research.
 
 ## Repository Structure
 
@@ -43,9 +62,17 @@ fyp/
 ├── sessions/                 # Saved Claude chat transcripts (global/architectural)
 ├── weekly/                   # Weekly supervisor meetings
 │   └── week-NN/
-│       ├── meeting-summary.md    # Transcript + supervisor feedback
-│       ├── my/                   # Personal work: slides, analysis, paper notes
-│       └── assets/               # Diagrams, images
+│       ├── meeting-summary.md    # Transcript + supervisor feedback (shared)
+│       ├── assets/               # Shared diagrams, images
+│       └── my/                   # Personal work, organized by person
+│           ├── kevin/            #   Kevin: Task Relation Learning
+│           │   ├── papers/       #   PDFs + summaries
+│           │   └── sessions/     #   Claude chat transcripts
+│           ├── chehan/           #   Chehan: Low-Rank (files pending)
+│           ├── induwara/         #   Induwara: Task Clustering
+│           │   └── papers/
+│           └── pathumi/          #   Pathumi: Decomposition
+│               └── papers/
 ├── wavCSE/                   # Management wrapper for the wavCSE baseline
 │   ├── CLAUDE.md             # ← wavCSE-specific instructions (architecture, commands, gotchas)
 │   ├── wavCSE/               # Actual git repo (upstream/ + downstream/ pipeline)
@@ -70,7 +97,8 @@ Each sub-project CLAUDE.md is self-contained — it can be used directly when ru
 - **Weekly meetings**: Thursday mornings, 8:30 AM. Each week gets `weekly/week-NN/`. Meeting notes in `meeting-summary.md`. Personal work (slides, analysis) in `my/`. Shared assets (diagrams) in `assets/`. Use the `academic-pptx` skill (`.claude/skills/academic-pptx/`) for weekly presentation slides — it enforces action titles, communication-first design, and academic slide standards.
 - **Transcript hygiene**: When extracting or saving meeting transcripts, strip anything that could affect people — personal schedules, private conversations, travel plans, off-topic remarks. Only keep research decisions, technical guidance, action items, and benchmark definitions.
 - **Saving Claude sessions**: Use `/copy` to capture transcripts as `.md` files. Global/architectural chats → `sessions/`. Week-specific → `weekly/week-NN/my/sessions/`.
-- **Papers**: PDFs are git-ignored. Track every paper in [`docs/papers.md`](docs/papers.md) — when you add a PDF to any folder, update the list with title, arXiv link, and status (to-read/reading/done). Paper summaries go in `weekly/week-NN/my/papers/summaries/`.
+- **Archived sessions are off-limits**: Do NOT read files in `sessions/` or exported `.txt` conversation files at the project root unless the user explicitly asks for a specific file by name. These are archived conversations that should not influence current work. If you need context from past work, ask the user which specific file to read.
+- **Papers**: PDFs are git-ignored. Track every paper in [`docs/papers.md`](docs/papers.md) — when you add a PDF to any folder, update the list with title, arXiv link, and status (to-read/reading/done). Paper summaries go in `weekly/week-NN/my/<person>/papers/summaries/`. When adding PDFs, classify them: published papers go in `papers/`, notes/slides/transcripts go in the person's root folder.
 - **Sub-projects** (`wavCSE`, `LibMTL`): Each has its own venv and git repo. Always `cd` into the inner repo before running code.
 - **Python version**: Python 3.9 is used by wavCSE. Be aware of version constraints when writing new code — prefer compatibility with 3.9+.
 - **Commits**: Stage selectively — never `git add -A` or `git add .`. Verify with `git diff --cached --name-only` before committing. Keep out: PDFs, node_modules, .venv, .ppt/.pptx (unless weekly slides), settings.local.json. Commit messages: imperative mood, explain why not what. One logical change per commit.
