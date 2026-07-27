@@ -1,0 +1,25 @@
+graph LR
+    A[Raw Audio] --> B["WavLM-Large<br/>24 Transformer Layers"]
+    B --> C["Frame Pooling<br/>6 strategies"]
+    C --> D[".pt Embeddings on Disk"]
+    D --> E["Projector<br/>Linear 1024 to 512"]
+    E --> F["Layer Pooling<br/>10 strategies"]
+    F --> G[Dropout 0.4]
+    G --> H["Hidden<br/>Linear 512 to 2000"]
+    H --> I[Dropout 0.6]
+    I --> J["Head 1<br/>Task 1"]
+    I --> K["Head 2<br/>Task 2"]
+    I --> L["Head N<br/>Task N"]
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style H fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style I fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style J fill:#161b22,stroke:#f85149,color:#f85149
+    style K fill:#161b22,stroke:#f85149,color:#f85149
+    style L fill:#161b22,stroke:#f85149,color:#f85149

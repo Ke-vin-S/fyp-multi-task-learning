@@ -1,0 +1,50 @@
+graph TD
+    subgraph "wavCSE-GBC Architecture"
+        A["Embedding Input<br/>B x L x 1024"] --> B["Projector<br/>1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden Layer<br/>512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> G1["Head Weight W₁<br/>2000 to C₁"]
+        F --> G2["Head Weight W₂<br/>2000 to C₂"]
+        F --> G3["Head Weight Wₙ<br/>2000 to Cₙ"]
+
+        F --> GB["Global Bias Projector<br/>2000 to 64"]
+
+        GB --> B_GLOBAL["b_global<br/>learned coupling vector<br/>dim = 64"]
+
+        B_GLOBAL --> H1["proj₁: 64 to C₁"]
+        B_GLOBAL --> H2["proj₂: 64 to C₂"]
+        B_GLOBAL --> H3["projₙ: 64 to Cₙ"]
+
+        G1 --> L1["Logits₁<br/>= W₁·h + b₁ + proj₁(g)"]
+        H1 --> L1
+        B1["Task Bias b₁<br/>dim = C₁"] --> L1
+
+        G2 --> L2["Logits₂<br/>= W₂·h + b₂ + proj₂(g)"]
+        H2 --> L2
+        B2["Task Bias b₂<br/>dim = C₂"] --> L2
+
+        G3 --> L3["Logitsₙ<br/>= Wₙ·h + bₙ + projₙ(g)"]
+        H3 --> L3
+        B3["Task Bias bₙ<br/>dim = Cₙ"] --> L3
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style GB fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B_GLOBAL fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H3 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B3 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style L1 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style L2 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style L3 fill:#1a2b4a,stroke:#a371f7,color:#a371f7

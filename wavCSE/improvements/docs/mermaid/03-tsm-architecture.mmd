@@ -1,0 +1,37 @@
+graph TD
+    subgraph "wavCSE-TSM Architecture"
+        A["Embedding Input<br/>B, L, 1024"] --> B["Projector<br/>Linear 1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden<br/>Linear 512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> LC1["Latent Classifier 1<br/>Linear 2000 to max_C"]
+        F --> LC2["Latent Classifier 2<br/>Linear 2000 to max_C"]
+        F --> LCk["Latent Classifier K<br/>Linear 2000 to max_C"]
+
+        LC1 --> STACK["Stack: B x K x max_C"]
+        LC2 --> STACK
+        LCk --> STACK
+
+        COMBINE["Structure Matrix A<br/>Softmax over K<br/>T x K, sparse via L1"]
+        STACK --> COMBINE
+        COMBINE --> T1["Task 1 Logits<br/>slice + bias"]
+        COMBINE --> T2["Task 2 Logits<br/>slice + bias"]
+        COMBINE --> Tn["Task N Logits<br/>slice + bias"]
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style LC1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style LC2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style LCk fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style STACK fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style COMBINE fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style T1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style T2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style Tn fill:#0d3b1e,stroke:#3fb950,color:#3fb950

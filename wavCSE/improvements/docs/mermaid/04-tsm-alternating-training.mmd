@@ -1,0 +1,9 @@
+graph TD
+    START[Start Epoch] --> TRAIN["Supervised Step<br/>Train all model params<br/>with A fixed via softmax"]
+    TRAIN --> CHECK{"epoch % alt_freq == 0?"}
+    CHECK -->|No| NEXT[Next Epoch]
+    CHECK -->|Yes| FREEZE["Unsupervised Step<br/>Freeze model backbone<br/>Optimize only A"]
+    FREEZE --> SPARSITY["Add sparsity loss<br/>lambda * L1 norm of A"]
+    SPARSITY --> UNFREEZE[Unfreeze all params]
+    UNFREEZE --> NEXT
+    NEXT --> START

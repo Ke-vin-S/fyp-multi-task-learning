@@ -1,0 +1,31 @@
+# Paper PDFs
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+
+# Datasets
+data/
+datasets/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Node
+node_modules/
+
+# my
+yow/

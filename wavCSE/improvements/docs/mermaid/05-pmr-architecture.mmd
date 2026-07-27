@@ -1,0 +1,36 @@
+graph TD
+    subgraph "wavCSE-PMR Architecture"
+        A["Embedding Input<br/>B, L, 1024"] --> B["Projector<br/>Linear 1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden<br/>Linear 512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> G1["Head 1<br/>Linear 2000 to C1"]
+        F --> G2["Head 2<br/>Linear 2000 to C2"]
+        F --> G3["Head N<br/>Linear 2000 to CN"]
+
+        G1 --> L1["Logits 1"]
+        G2 --> L2["Logits 2"]
+        G3 --> L3["Logits N"]
+
+        W["Task Parameter Matrix W<br/>Flattened head weights<br/>Shape: T x D_total"] -.->|"Constructed from"| G1
+        W -.->|"Constructed from"| G2
+        W -.->|"Constructed from"| G3
+
+        OMEGA["Precision Matrix<br/>Cholesky factor L, PSD, sparse<br/>Shape: T x T"] -->|Regularizes| LOSS["Loss plus PMR terms:<br/>gamma * -logdet + trace<br/>+ lambda * L1 off-diag"]
+        W -->|"Used in trace term"| LOSS
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G2 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G3 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style W fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style OMEGA fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style LOSS fill:#1a2b4a,stroke:#a371f7,color:#a371f7

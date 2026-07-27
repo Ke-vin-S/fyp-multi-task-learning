@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wavCSE Architectural Improvements — Benchmarking Study</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-secondary: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d2991d;
+    --red: #f85149;
+    --purple: #a371f7;
+    --cyan: #39c2c6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem; }
+  h2 { font-size: 1.75rem; color: var(--green); margin: 2.5rem 0 1rem 0; border-left: 4px solid var(--green); padding-left: 1rem; }
+  h3 { font-size: 1.3rem; color: var(--purple); margin: 1.8rem 0 0.8rem 0; }
+  h4 { font-size: 1.1rem; color: var(--orange); margin: 1.2rem 0 0.5rem 0; }
+
+  p { margin-bottom: 1rem; color: var(--text-secondary); }
+  .subtitle { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  .mermaid {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { background: #1c2128; color: var(--accent); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.3rem;
+  }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-orange { background: rgba(210,153,29,0.15); color: var(--orange); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-purple { background: rgba(163,113,247,0.15); color: var(--purple); }
+  .badge-cyan { background: rgba(57,194,198,0.15); color: var(--cyan); }
+
+  .highlight { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.3); border-radius: 6px; padding: 1rem; margin: 1rem 0; }
+  .highlight-warn { background: rgba(210,153,29,0.1); border: 1px solid rgba(210,153,29,0.3); border-radius: 6px; padding: 1rem; margin: 1rem 0; }
+
+  .architecture-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 1.5rem 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+  }
+  .arch-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    text-align: center;
+  }
+  .arch-block.modified {
+    border-color: var(--orange);
+    background: rgba(210,153,29,0.1);
+  }
+  .arch-block.new {
+    border-color: var(--green);
+    background: rgba(63,185,80,0.1);
+  }
+  .arch-arrow { color: var(--text-secondary); font-size: 1.2rem; }
+
+  .math { font-family: 'Latin Modern Math', 'Cambria Math', serif; font-style: italic; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 2rem 0; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { padding: 0.3rem 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .paper-ref {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: rgba(88,166,255,0.05);
+    border-radius: 6px;
+  }
+  .paper-ref .num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 3rem;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 1rem; }
+    h1 { font-size: 1.5rem; }
+    .architecture-flow { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>wavCSE Architectural Improvements</h1>
+<p class="subtitle">
+  Benchmarking three MTL architectural enhancements inspired by
+  Zhang et al. (2010), Ciliberto et al. (2015), and Gon&ccedil;alves et al. (2016).
+  <br>Original wavCSE contributions (recursive feature selection, layer/frame pooling) are <strong>preserved</strong>.
+</p>
+
+<!-- ============ TOC ============ -->
+<div class="toc">
+<h3 style="margin-top:0;">Contents</h3>
+<ul>
+  <li><a href="#original">1. Original wavCSE Architecture</a></li>
+  <li><a href="#papers">2. Reference Papers &amp; Key Ideas</a></li>
+  <li><a href="#gbc">3. wavCSE-GBC: Global Bias Coupling (Zhang 2010)</a></li>
+  <li><a href="#tsm">4. wavCSE-TSM: Task Structure Matrix (Ciliberto 2015)</a></li>
+  <li><a href="#pmr">5. wavCSE-PMR: Precision Matrix Regularization (Gon&ccedil;alves 2016)</a></li>
+  <li><a href="#comparison">6. Cross-Architecture Comparison</a></li>
+  <li><a href="#decisions">7. Architectural Decision Log</a></li>
+  <li><a href="#mapping">8. Paper-to-wavCSE Mapping Table</a></li>
+</ul>
+</div>
+
+<!-- ============ ORIGINAL ============ -->
+<h2 id="original">1. Original wavCSE Architecture</h2>
+
+<div class="card">
+<h3>Two-Stage Pipeline</h3>
+<div class="mermaid">
+graph LR
+    A[Raw Audio] --> B["WavLM-Large<br/>24 Transformer Layers"]
+    B --> C["Frame Pooling<br/>6 strategies"]
+    C --> D[".pt Embeddings on Disk"]
+    D --> E["Projector<br/>Linear 1024 to 512"]
+    E --> F["Layer Pooling<br/>10 strategies"]
+    F --> G[Dropout 0.4]
+    G --> H["Hidden<br/>Linear 512 to 2000"]
+    H --> I[Dropout 0.6]
+    I --> J["Head 1<br/>Task 1"]
+    I --> K["Head 2<br/>Task 2"]
+    I --> L["Head N<br/>Task N"]
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style H fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style I fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style J fill:#161b22,stroke:#f85149,color:#f85149
+    style K fill:#161b22,stroke:#f85149,color:#f85149
+    style L fill:#161b22,stroke:#f85149,color:#f85149
+</div>
+<p style="text-align:center;color:var(--red);font-size:0.85rem;">
+  Red = The part we modify: task classification heads (currently independent, no coupling)
+</p>
+</div>
+
+<div class="card">
+<h3>Key Characteristics</h3>
+<table>
+  <tr><th>Component</th><th>Specification</th><th>Params</th></tr>
+  <tr><td>Upstream</td><td>WavLM-Large (24 layers, 1024-dim, 16 heads)</td><td>~316M (frozen)</td></tr>
+  <tr><td>Frame Pooling</td><td>6 strategies (mean, max, mix, lnp, smp, lse)</td><td>0-1</td></tr>
+  <tr><td>Projector</td><td>Linear(1024 → 512)</td><td>~525K</td></tr>
+  <tr><td>Layer Pooling</td><td>10 strategies incl. weighted, gated, auto, SAP</td><td>0-525K</td></tr>
+  <tr><td>Hidden Layer</td><td>Linear(512 → 2000)</td><td>~1M</td></tr>
+  <tr><td style="color:var(--red);">Task Heads</td><td style="color:var(--red);">Linear(2000 → n_classes_t) per task — <strong>INDEPENDENT</strong></td><td style="color:var(--red);">varies</td></tr>
+  <tr><td>Loss</td><td>Unweighted average: (1/T) Σ CE_loss_t</td><td>-</td></tr>
+</table>
+</div>
+
+<div class="highlight-warn">
+<strong>Identified Limitation:</strong> The task classification heads are completely independent.
+There is no mechanism for tasks to share statistical strength or discover inter-task
+relationships. Each task's head weights and biases are learned in isolation, connected
+only through the shared backbone representation. This means:
+<ul style="margin:0.5rem 0 0 1.5rem;">
+  <li>No explicit modeling of which tasks are related</li>
+  <li>Equal loss weighting regardless of task difficulty or data size</li>
+  <li>Potential for negative transfer without detection</li>
+  <li>No interpretable task relationship structure</li>
+</ul>
+</div>
+
+<!-- ============ REFERENCE PAPERS ============ -->
+<h2 id="papers">2. Reference Papers &amp; Key Ideas</h2>
+
+<div class="paper-ref">
+  <div class="num">[1]</div>
+  <div>
+    <strong>Zhang, Graepel &amp; Herbrich (2010)</strong> —
+    <em>Bayesian Online Learning for Multi-label and Multi-variate Performance Measures.</em> AISTATS.
+    <br><span class="badge badge-green">Key Idea</span>
+    A <strong>shared global bias</strong> couples all classes through a graphical model
+    (similar to TrueSkill). The global bias acts as a "hub" parameter — updated more
+    frequently than per-class weights — leading to more confident estimates and
+    improved macro-averaged F1 scores over independent per-class training.
+  </div>
+</div>
+
+<div class="paper-ref">
+  <div class="num">[2]</div>
+  <div>
+    <strong>Ciliberto, Rosasco &amp; Villa (2015)</strong> —
+    <em>Learning Multiple Visual Tasks while Discovering their Structure.</em> CVPR.
+    <br><span class="badge badge-green">Key Idea</span>
+    Each task predictor is a <strong>sparse linear combination of latent basis functions</strong>
+    via a learned structure matrix A. &ell;<sub>1</sub> regularization on A recovers only
+    the most relevant task relations, preventing negative transfer.
+    <strong>Alternating minimization</strong> with convergence guarantees:
+    supervised step (learn f given A) &rarr; unsupervised step (learn A given f).
+  </div>
+</div>
+
+<div class="paper-ref">
+  <div class="num">[3]</div>
+  <div>
+    <strong>Gon&ccedil;alves, Das, Chatterjee, Sivakumar, Von Zuben &amp; Banerjee (2016)</strong> —
+    <em>Multi-task Sparse Structure Learning.</em> CIKM.
+    <br><span class="badge badge-green">Key Idea</span>
+    A <strong>sparse precision (inverse covariance) matrix &Omega;</strong> over task parameters
+    captures conditional independence between tasks. &Omega;<sub>ij</sub> = 0 means tasks i and j
+    are conditionally independent given all others. The precision matrix is learned
+    jointly with task parameters via alternating minimization.
+    Two variants: p-MSSL (on parameters) and r-MSSL (on residuals).
+  </div>
+</div>
+
+<!-- ============ GBC ============ -->
+<h2 id="gbc">3. wavCSE-GBC: Global Bias Coupling</h2>
+
+<div class="card">
+<h3>3.1 Original Paper Idea</h3>
+<p>
+  Zhang et al. (2010) proposed <strong>BOMC</strong> (Bayesian Online Multi-label Classification),
+  where a <strong>global bias b</strong> couples all classes through a factor graph. In their
+  multi-label model (Figure 3 of the paper), each class's discriminant
+  <span class="math">d<sub>c</sub> = f<sub>c</sub> - b</span> is compared against a shared global bias rather than
+  independently thresholded. The global bias serves as a "hub" that is updated by every
+  training example, leading to higher precision estimates.
+</p>
+<p>
+  <strong>Empirical finding:</strong> The coupled BOMC model (with global bias) significantly
+  outperformed the independent per-class model (BOMC IND) on industries and regions
+  groups of Reuters-1v2, with up to ~6% relative improvement in macro-averaged F1.
+</p>
+</div>
+
+<div class="card">
+<h3>3.2 Mapping to wavCSE</h3>
+<table>
+  <tr><th>Zhang 2010 Concept</th><th>wavCSE-GBC Implementation</th></tr>
+  <tr>
+    <td>Global bias b couples all classes</td>
+    <td><code>global_bias</code> parameter (dim=64) shared across all task heads</td>
+  </tr>
+  <tr>
+    <td>Per-class discriminant d<sub>c</sub> = f<sub>c</sub> - b</td>
+    <td>Per-task logit = W<sub>t</sub>&middot;h + <strong>b<sub>t</sub> + proj<sub>t</sub>(b<sub>global</sub>)</strong></td>
+  </tr>
+  <tr>
+    <td>Global bias updated by every example</td>
+    <td>Global bias receives gradients from all tasks in every batch</td>
+  </tr>
+  <tr>
+    <td>Bayesian treatment via Gaussian posterior</td>
+    <td>Implicit: the global bias learns a data-dependent prior over task biases</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>3.3 Architecture Diagram</h3>
+<div class="mermaid">
+graph TD
+    subgraph "wavCSE-GBC Architecture"
+        A["Embedding Input<br/>B x L x 1024"] --> B["Projector<br/>1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden Layer<br/>512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> G1["Head Weight W1<br/>2000 to C1"]
+        F --> G2["Head Weight W2<br/>2000 to C2"]
+        F --> G3["Head Weight Wn<br/>2000 to Cn"]
+
+        F --> GB["Global Bias Projector<br/>2000 to 64"]
+
+        GB --> B_GLOBAL["b_global<br/>learned coupling vector<br/>dim = 64"]
+
+        B_GLOBAL --> H1["proj1: 64 to C1"]
+        B_GLOBAL --> H2["proj2: 64 to C2"]
+        B_GLOBAL --> H3["projn: 64 to Cn"]
+
+        G1 --> L1["Logits1<br/>= W1*h + b1 + proj1(g)"]
+        H1 --> L1
+        B1["Task Bias b1<br/>dim = C1"] --> L1
+
+        G2 --> L2["Logits2<br/>= W2*h + b2 + proj2(g)"]
+        H2 --> L2
+        B2["Task Bias b2<br/>dim = C2"] --> L2
+
+        G3 --> L3["Logitsn<br/>= Wn*h + bn + projn(g)"]
+        H3 --> L3
+        B3["Task Bias bn<br/>dim = Cn"] --> L3
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style GB fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B_GLOBAL fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style H3 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style B3 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style L1 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style L2 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style L3 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+</div>
+<p style="text-align:center;color:var(--green);font-size:0.85rem;">
+  Green = New/modified components relative to original wavCSE
+</p>
+</div>
+
+<div class="card">
+<h3>3.4 Forward Pass</h3>
+<p><strong>For each task t:</strong></p>
+<div class="highlight">
+<code>
+logits<sub>t</sub> = W<sub>t</sub> &middot; h + b<sub>t</sub> + proj<sub>t</sub>(b<sub>global</sub> + gb_proj(h))
+</code>
+</div>
+<p>where:</p>
+<ul>
+  <li><strong>W<sub>t</sub></strong>: task-specific weight matrix (unchanged from original)</li>
+  <li><strong>b<sub>t</sub></strong>: task-specific learned bias (new — was part of Linear, now explicit)</li>
+  <li><strong>b<sub>global</sub></strong>: global coupling bias (new, learnable, dim=64)</li>
+  <li><strong>gb_proj(h)</strong>: input-dependent global bias projection (new)</li>
+  <li><strong>proj<sub>t</sub></strong>: per-task linear map from global bias space → task output space (new)</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>3.5 Design Rationale</h3>
+<table>
+  <tr><th>Decision</th><th>Reasoning</th></tr>
+  <tr>
+    <td>Global bias dim = 64</td>
+    <td>Small enough to act as a bottleneck (forcing shared information),
+      large enough to carry meaningful coupling signal across diverse tasks (KS=12 classes, SI=1251, ER=4)</td>
+  </tr>
+  <tr>
+    <td>Both static + dynamic bias</td>
+    <td>The static <code>b_global</code> captures dataset-level base rates (like Zhang's global b);
+      the input-dependent <code>gb_proj(h)</code> captures per-sample coupling</td>
+  </tr>
+  <tr>
+    <td>Per-task projections (proj<sub>t</sub>)</td>
+    <td>Different tasks have different numbers of output classes; the projection
+      maps the shared 64-dim coupling to each task's specific output space</td>
+  </tr>
+  <tr>
+    <td>Bias-only coupling (not weights)</td>
+    <td>Coupling only biases (not weight matrices) is the minimal change &#8212;
+      it models shared base rates while letting each task learn its own decision boundaries</td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ TSM ============ -->
+<h2 id="tsm">4. wavCSE-TSM: Task Structure Matrix</h2>
+
+<div class="card">
+<h3>4.1 Original Paper Idea</h3>
+<p>
+  Ciliberto et al. (2015) proposed <strong>Sparse Kernel MTL</strong>, where each task
+  predictor f<sub>t</sub> decomposes as a linear combination of <strong>latent basis functions</strong>
+  g<sub>s</sub> through a structure matrix A:
+</p>
+<div class="highlight">
+<code>f<sub>t</sub>(x) = &Sigma;<sub>s</sub> A<sub>ts</sub> &middot; g<sub>s</sub>(x)</code>
+</div>
+<p>
+  The matrix A is learned with <strong>&ell;<sub>1</sub> sparsity</strong> to recover only the most relevant
+  task relations. The optimization alternates between a supervised step
+  (learn predictors given A) and an unsupervised step (learn A given predictors).
+  This was shown to recover interpretable task clusters (e.g., natural vs. urban
+  scenes in the 15-Scenes dataset) and resist negative transfer on Animals with Attributes.
+</p>
+</div>
+
+<div class="card">
+<h3>4.2 Mapping to wavCSE</h3>
+<table>
+  <tr><th>Ciliberto 2015 Concept</th><th>wavCSE-TSM Implementation</th></tr>
+  <tr>
+    <td>Latent basis functions g<sub>s</sub> in RKHS</td>
+    <td><code>latent_classifiers[k]</code>: K linear layers that form a "classifier basis"</td>
+  </tr>
+  <tr>
+    <td>Structure matrix A (T &times; K)</td>
+    <td><code>structure_matrix_A</code>: learnable parameter, softmax-normalized over K</td>
+  </tr>
+  <tr>
+    <td>&ell;<sub>1</sub> sparsity on A</td>
+    <td><code>structure_sparsity_lambda * ||A||<sub>1</sub></code> penalty in loss</td>
+  </tr>
+  <tr>
+    <td>Alternating minimization</td>
+    <td>Every <code>alternate_frequency</code> epochs: freeze model, optimize A only</td>
+  </tr>
+  <tr>
+    <td>Separable kernel k(x,x')&middot;A</td>
+    <td>Implicit: shared backbone provides the "kernel" (representation), A operates on classifier space</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>4.3 Architecture Diagram</h3>
+<div class="mermaid">
+graph TD
+    subgraph "wavCSE-TSM Architecture"
+        A["Embedding Input<br/>B, L, 1024"] --> B["Projector<br/>Linear 1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden<br/>Linear 512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> LC1["Latent Classifier 1<br/>Linear 2000 to max_C"]
+        F --> LC2["Latent Classifier 2<br/>Linear 2000 to max_C"]
+        F --> LCk["Latent Classifier K<br/>Linear 2000 to max_C"]
+
+        LC1 --> STACK["Stack: B x K x max_C"]
+        LC2 --> STACK
+        LCk --> STACK
+
+        COMBINE["Structure Matrix A<br/>Softmax over K<br/>T x K, sparse via L1"]
+        STACK --> COMBINE
+        COMBINE --> T1["Task 1 Logits<br/>slice + bias"]
+        COMBINE --> T2["Task 2 Logits<br/>slice + bias"]
+        COMBINE --> Tn["Task N Logits<br/>slice + bias"]
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style LC1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style LC2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style LCk fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style STACK fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style COMBINE fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style T1 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style T2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style Tn fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+</div>
+<p style="text-align:center;">
+  <span style="color:var(--green);font-size:0.85rem;">Green = New</span> &nbsp;
+  <span style="color:var(--purple);font-size:0.85rem;">Purple = Key structural component</span>
+</p>
+</div>
+
+<div class="card">
+<h3>4.4 Forward Pass</h3>
+<div class="highlight">
+<code>
+latent<sub>k</sub> = LatentClassifier<sub>k</sub>(h) &nbsp;&nbsp;&nbsp; // [B, max_C] for k=1..K
+<br>
+A<sub>soft</sub> = softmax(A, dim=1) &nbsp;&nbsp;&nbsp; // [T, K] row-stochastic
+<br>
+logits<sub>t</sub> = &Sigma;<sub>k</sub> A<sub>soft</sub>[t,k] &middot; latent<sub>k</sub>[:out_dim<sub>t</sub>] + b<sub>t</sub>
+</code>
+</div>
+<p>where <strong>K</strong> is the number of latent classifiers (default: 8), <strong>T</strong> is the number of tasks,
+   and the softmax ensures each task is a convex combination of latent classifiers.</p>
+</div>
+
+<div class="card">
+<h3>4.5 Training: Alternating Minimization</h3>
+<div class="mermaid">
+graph TD
+    START[Start Epoch] --> TRAIN["Supervised Step<br/>Train all model params<br/>with A fixed via softmax"]
+    TRAIN --> CHECK{"epoch % alt_freq == 0?"}
+    CHECK -->|No| NEXT[Next Epoch]
+    CHECK -->|Yes| FREEZE["Unsupervised Step<br/>Freeze model backbone<br/>Optimize only A"]
+    FREEZE --> SPARSITY["Add sparsity loss<br/>lambda * L1 norm of A"]
+    SPARSITY --> UNFREEZE[Unfreeze all params]
+    UNFREEZE --> NEXT
+    NEXT --> START
+</div>
+</div>
+
+<div class="card">
+<h3>4.6 Design Rationale</h3>
+<table>
+  <tr><th>Decision</th><th>Reasoning</th></tr>
+  <tr>
+    <td>K=8 latent classifiers</td>
+    <td>Enough to capture diverse task groupings (content, speaker, emotion clusters)
+      without over-parameterizing. Similar to Ciliberto's T=10-20 task settings</td>
+  </tr>
+  <tr>
+    <td>Softmax over K (not raw A)</td>
+    <td>Makes each task a convex combination of latents — interpretable as
+      "task t uses X% of latent k". Also stabilizes training.</td>
+  </tr>
+  <tr>
+    <td>Alternate every 5 epochs</td>
+    <td>Too frequent (every epoch) = structure oscillates; too infrequent = structure lags.
+      5 epochs balances both, matching Ciliberto's empirical schedule</td>
+  </tr>
+  <tr>
+    <td>Sparsity on A via l1</td>
+    <td>Core insight from Ciliberto: sparsity prevents negative transfer by zeroing
+      out spurious task correlations. Only statistically meaningful relations survive.</td>
+  </tr>
+  <tr>
+    <td>Separate structure optimizer</td>
+    <td>Different learning rate for A (0.001) vs model (0.0025). Structure learning
+      needs smaller, more careful steps to avoid collapsing to uniform.</td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ PMR ============ -->
+<h2 id="pmr">5. wavCSE-PMR: Precision Matrix Regularization</h2>
+
+<div class="card">
+<h3>5.1 Original Paper Idea</h3>
+<p>
+  Gon&ccedil;alves et al. (2016) proposed <strong>MSSL</strong> (Multi-task Sparse Structure Learning),
+  which learns a <strong>sparse precision matrix &Omega;</strong> (inverse covariance) over task
+  parameters. The core insight: by modeling the rows of the parameter matrix W as
+  draws from a multivariate Gaussian <span class="math">&#119987;<sub>j</sub> ~ N(0, &Omega;<sup>-1</sup>)</span>,
+  the precision matrix &Omega; encodes <strong>conditional independence</strong> between tasks:
+  &Omega;<sub>ij</sub> = 0 means tasks i and j are conditionally independent given all others.
+</p>
+<p>
+  <strong>Empirical finding:</strong> On the landmine detection dataset, p-MSSL recovered two
+  clear clusters corresponding to foliated (tasks 1-10) vs. desert (tasks 11-19) terrain,
+  purely from data without any spatial information. On climate data, r-MSSL discovered
+  meaningful spatial dependencies (Amazon basin connectivity, Andes separation).
+</p>
+</div>
+
+<div class="card">
+<h3>5.2 Mapping to wavCSE</h3>
+<table>
+  <tr><th>Gon&ccedil;alves 2016 Concept</th><th>wavCSE-PMR Implementation</th></tr>
+  <tr>
+    <td>Precision matrix &Omega; (K&times;K) over tasks</td>
+    <td><code>omega_chol</code>: Cholesky factor of &Omega;, learned via gradient descent</td>
+  </tr>
+  <tr>
+    <td>-log|&Omega;| + Tr(W&Omega;W<sup>T</sup>)</td>
+    <td><code>get_pmr_loss()</code>: log-det via Cholesky diag + trace via matrix multiply</td>
+  </tr>
+  <tr>
+    <td>&lambda;||&Omega;||<sub>1</sub> sparsity</td>
+    <td><code>pmr_lambda * |off_diag(&Omega;)|<sub>1</sub></code></td>
+  </tr>
+  <tr>
+    <td>&gamma; regularization strength</td>
+    <td><code>pmr_gamma</code>: controls overall PMR loss contribution</td>
+  </tr>
+  <tr>
+    <td>Alternating minimization (W then &Omega;)</td>
+    <td>Joint optimization with warmup: first 3 epochs no PMR, then enable</td>
+  </tr>
+  <tr>
+    <td>PSD constraint on &Omega;</td>
+    <td>Enforced via Cholesky parameterization: &Omega; = LL<sup>T</sup>, L lower triangular</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>5.3 Architecture Diagram</h3>
+<div class="mermaid">
+graph TD
+    subgraph "wavCSE-PMR Architecture"
+        A["Embedding Input<br/>B, L, 1024"] --> B["Projector<br/>Linear 1024 to 512"]
+        B --> C[Layer Pooling]
+        C --> D[Dropout 0.4]
+        D --> E["Hidden<br/>Linear 512 to 2000"]
+        E --> F[Dropout 0.6]
+
+        F --> G1["Head 1<br/>Linear 2000 to C1"]
+        F --> G2["Head 2<br/>Linear 2000 to C2"]
+        F --> G3["Head N<br/>Linear 2000 to CN"]
+
+        G1 --> L1["Logits 1"]
+        G2 --> L2["Logits 2"]
+        G3 --> L3["Logits N"]
+
+        W["Task Parameter Matrix W<br/>Flattened head weights<br/>Shape: T x D_total"] -.->|"Constructed from"| G1
+        W -.->|"Constructed from"| G2
+        W -.->|"Constructed from"| G3
+
+        OMEGA["Precision Matrix<br/>Cholesky factor L, PSD, sparse<br/>Shape: T x T"] -->|Regularizes| LOSS["Loss plus PMR terms:<br/>gamma * -logdet + trace<br/>+ lambda * L1 off-diag"]
+        W -->|"Used in trace term"| LOSS
+    end
+
+    style A fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style B fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style C fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style D fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style E fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style F fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G2 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G3 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style W fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style OMEGA fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style LOSS fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+</div>
+<p style="text-align:center;">
+  <span style="color:var(--green);font-size:0.85rem;">Green = New (W is constructed from existing heads)</span> &nbsp;
+  <span style="color:var(--purple);font-size:0.85rem;">Purple = Key structural regularizer</span>
+</p>
+</div>
+
+<div class="card">
+<h3>5.4 Loss Function</h3>
+<div class="highlight">
+<code>
+L<sub>total</sub> = L<sub>CE</sub> + &gamma; &middot; (-log|&Omega;| + Tr(W&Omega;W<sup>T</sup>)) + &lambda; &middot; ||off_diag(&Omega;)||<sub>1</sub>
+</code>
+</div>
+<p>Where each term has a specific role:</p>
+<table>
+  <tr><th>Term</th><th>Role</th><th>wavCSE-PMR Default</th></tr>
+  <tr><td>-log|&Omega;|</td><td>Prevents &Omega; from collapsing to zero. Encourages well-conditioned precision</td><td>&gamma; = 0.1</td></tr>
+  <tr><td>Tr(W&Omega;W<sup>T</sup>)</td><td>Couples task parameters: similar tasks get pushed together in parameter space</td><td>&gamma; = 0.1</td></tr>
+  <tr><td>&lambda;||off_diag(&Omega;)||<sub>1</sub></td><td>Sparsity: only the most statistically meaningful task relationships survive</td><td>&lambda; = 0.01</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>5.5 Design Rationale</h3>
+<table>
+  <tr><th>Decision</th><th>Reasoning</th></tr>
+  <tr>
+    <td>Cholesky parameterization</td>
+    <td>Guarantees &Omega; is PSD by construction (&Omega; = LL<sup>T</sup>). Avoids expensive
+      projection steps that ADMM-based methods (Gon&ccedil;alves' original) require</td>
+  </tr>
+  <tr>
+    <td>Warmup epochs = 3</td>
+    <td>Let task heads converge to reasonable values before imposing structure.
+      Without warmup, early PMR loss can force random task groupings</td>
+  </tr>
+  <tr>
+    <td>Off-diagonal sparsity only</td>
+    <td>Diagonal of &Omega; represents task-specific precision (inverse variance) —
+      should NOT be sparse (every task should have non-zero precision)</td>
+  </tr>
+  <tr>
+    <td>W from head weights + biases</td>
+    <td>Flattening the full head parameters (weight matrix + bias vector) captures
+      the complete task-specific parameterization in the trace term</td>
+  </tr>
+  <tr>
+    <td>&gamma; = 0.1 (small)</td>
+    <td>PMR is a regularizer, not the primary loss. Keep it small enough to guide
+      without dominating. Gon&ccedil;alves uses similar scaling</td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ COMPARISON ============ -->
+<h2 id="comparison">6. Cross-Architecture Comparison</h2>
+
+<div class="card">
+<h3>6.1 Architecture Summary</h3>
+<div class="mermaid">
+graph TD
+    subgraph "Original wavCSE"
+        O1[Shared Backbone] --> O2[Independent Heads]
+    end
+
+    subgraph "wavCSE-GBC Zhang 2010"
+        G1[Shared Backbone] --> G2[Independent Heads]
+        G1 --> G3["Global Bias<br/>64-dim coupling"]
+        G3 --> G2
+    end
+
+    subgraph "wavCSE-TSM Ciliberto 2015"
+        T1[Shared Backbone] --> T2[K Latent Classifiers]
+        T2 --> T3[Structure Matrix A]
+        T3 --> T4[Task Outputs]
+    end
+
+    subgraph "wavCSE-PMR Goncalves 2016"
+        P1[Shared Backbone] --> P2[Independent Heads]
+        P2 --> P3["Precision Matrix<br/>Regularizes head params"]
+    end
+
+    style O1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style O2 fill:#161b22,stroke:#f85149,color:#f85149
+    style G1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G2 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style G3 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style T1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style T2 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style T3 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+    style T4 fill:#0d3b1e,stroke:#3fb950,color:#3fb950
+    style P1 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style P2 fill:#161b22,stroke:#30363d,color:#c9d1d9
+    style P3 fill:#1a2b4a,stroke:#a371f7,color:#a371f7
+</div>
+</div>
+
+<div class="card">
+<h3>6.2 Feature Comparison Matrix</h3>
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>Original wavCSE</th>
+    <th>wavCSE-GBC</th>
+    <th>wavCSE-TSM</th>
+    <th>wavCSE-PMR</th>
+  </tr>
+  <tr>
+    <td>Task coupling mechanism</td>
+    <td><span class="badge badge-red">None</span></td>
+    <td><span class="badge badge-green">Global bias</span></td>
+    <td><span class="badge badge-purple">Structure matrix A</span></td>
+    <td><span class="badge badge-purple">Precision matrix &Omega;</span></td>
+  </tr>
+  <tr>
+    <td>Interpretability</td>
+    <td><span class="badge badge-red">None</span></td>
+    <td><span class="badge badge-orange">Bias value inspection</span></td>
+    <td><span class="badge badge-green">A[t,k] = task-latent weights</span></td>
+    <td><span class="badge badge-green">&Omega;<sub>ij</sub> = cond. independence</span></td>
+  </tr>
+  <tr>
+    <td>Negative transfer protection</td>
+    <td><span class="badge badge-red">None</span></td>
+    <td><span class="badge badge-orange">Implicit (soft coupling)</span></td>
+    <td><span class="badge badge-green">Explicit (&ell;<sub>1</sub> on A)</span></td>
+    <td><span class="badge badge-green">Explicit (&ell;<sub>1</sub> on &Omega;)</span></td>
+  </tr>
+  <tr>
+    <td>New parameters</td>
+    <td>0</td>
+    <td><span class="badge badge-green">~4K</span></td>
+    <td><span class="badge badge-orange">~16K</span></td>
+    <td><span class="badge badge-green">~T&sup2;/2</span></td>
+  </tr>
+  <tr>
+    <td>Training overhead</td>
+    <td>Baseline</td>
+    <td><span class="badge badge-green">Negligible</span></td>
+    <td><span class="badge badge-orange">+10% (alternating)</span></td>
+    <td><span class="badge badge-orange">+5% (PMR loss)</span></td>
+  </tr>
+  <tr>
+    <td>Graphical model interpretation</td>
+    <td><span class="badge badge-red">No</span></td>
+    <td><span class="badge badge-red">No</span></td>
+    <td><span class="badge badge-orange">Partial (A is asymmetric)</span></td>
+    <td><span class="badge badge-green">Yes (&Omega; = precision)</span></td>
+  </tr>
+  <tr>
+    <td>Preserves original head structure</td>
+    <td><span class="badge badge-green">Yes</span></td>
+    <td><span class="badge badge-green">Yes</span></td>
+    <td><span class="badge badge-red">No (replaced)</span></td>
+    <td><span class="badge badge-green">Yes</span></td>
+  </tr>
+  <tr>
+    <td>Paper inspiration</td>
+    <td>—</td>
+    <td>Zhang et al. 2010 (BOMC)</td>
+    <td>Ciliberto et al. 2015 (SKMTL)</td>
+    <td>Gon&ccedil;alves et al. 2016 (MSSL)</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>6.3 When to Use Each Variant</h3>
+<table>
+  <tr><th>Scenario</th><th>Recommended Variant</th><th>Reasoning</th></tr>
+  <tr>
+    <td>Minimal change, quick test</td>
+    <td><span class="badge badge-green">GBC</span></td>
+    <td>Only ~4K new params, no training loop changes, immediate insight into task coupling</td>
+  </tr>
+  <tr>
+    <td>Discover task groupings</td>
+    <td><span class="badge badge-purple">TSM</span></td>
+    <td>Structure matrix A directly shows which latent classifiers each task uses;
+      sparsity reveals natural task clusters</td>
+  </tr>
+  <tr>
+    <td>Formal task dependency graph</td>
+    <td><span class="badge badge-purple">PMR</span></td>
+    <td>Precision matrix &Omega; has a rigorous graphical model interpretation;
+      conditional independence edges are statistically meaningful</td>
+  </tr>
+  <tr>
+    <td>Resist negative transfer</td>
+    <td><span class="badge badge-purple">TSM</span> or <span class="badge badge-purple">PMR</span></td>
+    <td>Both have explicit sparsity mechanisms that zero out unhelpful task relationships</td>
+  </tr>
+  <tr>
+    <td>Production deployment</td>
+    <td><span class="badge badge-green">GBC</span></td>
+    <td>Simplest, most lightweight, no alternating training complexity</td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ DECISION LOG ============ -->
+<h2 id="decisions">7. Architectural Decision Log</h2>
+
+<div class="card">
+<h3>7.1 What We Preserved (wavCSE Core Contributions)</h3>
+<table>
+  <tr><th>Component</th><th>Status</th><th>Why</th></tr>
+  <tr><td>Recursive Feature Selection</td><td><span class="badge badge-green">Preserved</span></td><td>Layer selection from WavLM transformer layers is the key wavCSE contribution; our improvements operate downstream of this</td></tr>
+  <tr><td>Frame Pooling Strategies</td><td><span class="badge badge-green">Preserved</span></td><td>6 strategies (mean, max, mix, lnp, smp, lse) unchanged — operates at embedding extraction stage</td></tr>
+  <tr><td>Layer Pooling Strategies</td><td><span class="badge badge-green">Preserved</span></td><td>10 strategies (incl. weighted, gated, auto, SAP) unchanged — operates in downstream model</td></tr>
+  <tr><td>Projector Layer</td><td><span class="badge badge-green">Preserved</span></td><td>Linear(1024 → 512) — the shared representation bottleneck</td></tr>
+  <tr><td>Hidden Layer</td><td><span class="badge badge-green">Preserved</span></td><td>Linear(512 → 2000) — the high-dim shared representation</td></tr>
+  <tr><td>Two-Stage Pipeline</td><td><span class="badge badge-green">Preserved</span></td><td>Upstream (embedding extraction) → Downstream (training) separation</td></tr>
+  <tr><td>Checkpoint System</td><td><span class="badge badge-green">Preserved</span></td><td>best/opt/epoch checkpoint variants with rolling window</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>7.2 What We Changed &amp; Why</h3>
+<table>
+  <tr><th>Change</th><th>Applies To</th><th>Original</th><th>New</th><th>Motivation</th></tr>
+  <tr>
+    <td>Task head bias structure</td>
+    <td><span class="badge badge-green">GBC</span></td>
+    <td>Each Linear head has own bias: <code>nn.Linear bias=True</code></td>
+    <td>Explicit per-task bias + global coupling bias + per-sample projection</td>
+    <td>Zhang 2010: global bias acts as statistical "hub," updated more often → higher precision</td>
+  </tr>
+  <tr>
+    <td>Task head architecture</td>
+    <td><span class="badge badge-purple">TSM</span></td>
+    <td>T independent Linear heads</td>
+    <td>K latent classifiers + structure matrix A: T×K with softmax + &ell;<sub>1</sub></td>
+    <td>Ciliberto 2015: latent basis enables task structure discovery; sparsity prevents negative transfer</td>
+  </tr>
+  <tr>
+    <td>Loss function</td>
+    <td><span class="badge badge-purple">PMR</span></td>
+    <td>L = (1/T)&Sigma;CE<sub>t</sub> + L1 + L2</td>
+    <td>L += &gamma;(-log|&Omega;|+Tr(W&Omega;W<sup>T</sup>)) + &lambda;||off_diag(&Omega;)||<sub>1</sub></td>
+    <td>Gon&ccedil;alves 2016: precision matrix captures conditional independence; sparse → interpretable</td>
+  </tr>
+  <tr>
+    <td>Training procedure</td>
+    <td><span class="badge badge-purple">TSM</span></td>
+    <td>Standard epoch loop</td>
+    <td>Alternating: supervised (model) → unsupervised (A) every 5 epochs</td>
+    <td>Ciliberto 2015 Algorithm 1: provably convergent alternating minimization</td>
+  </tr>
+  <tr>
+    <td>Training procedure</td>
+    <td><span class="badge badge-purple">PMR</span></td>
+    <td>Standard epoch loop</td>
+    <td>PMR loss enabled after 3-epoch warmup; joint optimization</td>
+    <td>Gon&ccedil;alves 2016: let task heads converge before imposing structure</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>7.3 Design Principles Followed</h3>
+<ol>
+  <li><strong>Minimal invasiveness:</strong> All changes are confined to the task head region
+    or loss function. The shared backbone, pooling, and feature extraction remain untouched.</li>
+  <li><strong>Drop-in compatibility:</strong> Each variant can be used with the same upstream
+    embeddings, config system, and evaluation pipeline as original wavCSE.</li>
+  <li><strong>Interpretability first:</strong> Every added parameter has a clear meaning —
+    global bias coupling (GBC), task-latent weights (TSM), conditional independence (PMR).</li>
+  <li><strong>Sparsity as a principle:</strong> Following both Ciliberto and Gon&ccedil;alves,
+    we use &ell;<sub>1</sub> regularization to discover only statistically meaningful task relationships.</li>
+  <li><strong>Preserve original contributions:</strong> The Recursive Feature Selection
+    (layer selection + frame/layer pooling) that makes wavCSE novel is not modified.</li>
+</ol>
+</div>
+
+<!-- ============ MAPPING TABLE ============ -->
+<h2 id="mapping">8. Paper-to-wavCSE Mapping Table</h2>
+
+<div class="card">
+<h3>8.1 Complete Conceptual Mapping</h3>
+<table>
+  <tr>
+    <th>Paper</th>
+    <th>Original Concept</th>
+    <th>Mathematical Form</th>
+    <th>wavCSE Implementation</th>
+    <th>File Location</th>
+  </tr>
+  <tr>
+    <td rowspan="3">Zhang 2010<br><small>BOMC</small></td>
+    <td>Global bias coupling</td>
+    <td>d<sub>c</sub> = f<sub>c</sub> - b</td>
+    <td><code>global_bias</code> (nn.Parameter, dim=64)</td>
+    <td><code>models/gbc_model.py:79</code></td>
+  </tr>
+  <tr>
+    <td>Per-class discriminant</td>
+    <td>f<sub>c</sub> = &lang;w<sub>c</sub>, x&rang;</td>
+    <td><code>head(embedding) + task_biases[t]</code></td>
+    <td><code>models/gbc_model.py:136-138</code></td>
+  </tr>
+  <tr>
+    <td>Factor graph coupling</td>
+    <td>I(d<sub>c</sub> > &epsilon;)</td>
+    <td>Implicit: global bias projection per sample</td>
+    <td><code>models/gbc_model.py:133-134</code></td>
+  </tr>
+
+  <tr>
+    <td rowspan="4">Ciliberto 2015<br><small>SKMTL</small></td>
+    <td>Latent basis functions</td>
+    <td>f<sub>t</sub> = &Sigma;<sub>s</sub> A<sub>ts</sub> g<sub>s</sub></td>
+    <td><code>latent_classifiers[k]</code> (nn.ModuleList)</td>
+    <td><code>models/tsm_model.py:83-86</code></td>
+  </tr>
+  <tr>
+    <td>Structure matrix A</td>
+    <td>A &isin; R<sup>T&times;K</sup>, sparse</td>
+    <td><code>structure_matrix_A</code> (nn.Parameter)</td>
+    <td><code>models/tsm_model.py:90-92</code></td>
+  </tr>
+  <tr>
+    <td>Sparsity penalty</td>
+    <td>&mu;||A||<sub>1</sub></td>
+    <td><code>structure_sparsity_lambda * |A|_1</code></td>
+    <td><code>models/tsm_model.py:122-123</code></td>
+  </tr>
+  <tr>
+    <td>Alternating minimization</td>
+    <td>Alg 1: supervised &rarr; unsupervised</td>
+    <td><code>_optimize_structure_matrix()</code> every 5 epochs</td>
+    <td><code>trainers/tsm_trainer.py:52-90</code></td>
+  </tr>
+
+  <tr>
+    <td rowspan="4">Gon&ccedil;alves 2016<br><small>MSSL</small></td>
+    <td>Precision matrix &Omega;</td>
+    <td>&#119987;<sub>j</sub> ~ N(0, &Omega;<sup>-1</sup>)</td>
+    <td><code>omega_chol</code> (nn.Parameter, Cholesky factor)</td>
+    <td><code>models/pmr_model.py:92-94</code></td>
+  </tr>
+  <tr>
+    <td>Log-det + trace term</td>
+    <td>-log|&Omega;| + Tr(W&Omega;W<sup>T</sup>)</td>
+    <td><code>get_pmr_loss()</code></td>
+    <td><code>models/pmr_model.py:137-168</code></td>
+  </tr>
+  <tr>
+    <td>&ell;<sub>1</sub> on &Omega;</td>
+    <td>&lambda;||&Omega;||<sub>1</sub></td>
+    <td><code>pmr_lambda * |off_diag(&Omega;)|_1</code></td>
+    <td><code>models/pmr_model.py:164-167</code></td>
+  </tr>
+  <tr>
+    <td>PSD constraint</td>
+    <td>&Omega; & succeq; 0</td>
+    <td>Cholesky: &Omega; = LL<sup>T</sup></td>
+    <td><code>models/pmr_model.py:143-144</code></td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>8.2 wavCSE Components: Changed vs. Preserved</h3>
+
+<div class="mermaid">
+graph TD
+    subgraph "PRESERVED wavCSE Components"
+        UP["WavLM Upstream<br/>24-layer transformer, frozen"]
+        FP["Frame Pooling<br/>6 strategies on time dim"]
+        PROJ["Projector Layer<br/>Linear 1024 to 512"]
+        LP["Layer Pooling<br/>10 strategies on layer dim"]
+        HID["Hidden Layer<br/>Linear 512 to 2000"]
+        DROP["Dropout Layers<br/>0.4 and 0.6"]
+        CKPT["Checkpoint System<br/>best, opt, epoch"]
+        EVAL[Evaluation Pipeline]
+    end
+
+    subgraph "MODIFIED Components"
+        direction TB
+        GBC_MOD["GBC: Global Bias<br/>plus per-task bias projection"]
+        TSM_MOD["TSM: Latent Classifiers<br/>plus Structure Matrix A"]
+        PMR_MOD["PMR: Precision Matrix<br/>plus Cholesky and PMR Loss"]
+    end
+
+    HID --> GBC_MOD
+    HID --> TSM_MOD
+    HID --> PMR_MOD
+
+    style UP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style FP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style PROJ fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style LP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style HID fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style DROP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style CKPT fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style EVAL fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style GBC_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d
+    style TSM_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d
+    style PMR_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d
+</div>
+</div>
+
+<!-- ============ HOW TO RUN ============ -->
+<h2 id="run">9. How to Run</h2>
+
+<div class="card">
+<h3>Quick Start</h3>
+<div class="highlight">
+<code>
+# Run all three improved architectures
+cd /home/kevin/projects/fyp/wavCSE/improvements
+python run_improvements.py --model all --task_type ks_si_er
+
+# Run a single variant
+python run_improvements.py --model gbc --task_type ks_si_er
+python run_improvements.py --model tsm --task_type ks_si_er
+python run_improvements.py --model pmr --task_type ks_si_er
+
+# Compare against original
+python run_improvements.py --model original --task_type ks_si_er
+</code>
+</div>
+</div>
+
+<div class="card">
+<h3>File Structure</h3>
+<pre style="background:var(--surface);padding:1rem;border-radius:6px;overflow-x:auto;">
+improvements/
+├── models/
+│   ├── __init__.py
+│   ├── gbc_model.py          # Global Bias Coupling (Zhang 2010)
+│   ├── tsm_model.py          # Task Structure Matrix (Ciliberto 2015)
+│   └── pmr_model.py          # Precision Matrix Regularization (Goncalves 2016)
+├── trainers/
+│   ├── __init__.py
+│   ├── tsm_trainer.py        # Alternating minimization trainer for TSM
+│   └── pmr_trainer.py        # PMR loss + warmup trainer
+├── configs/
+│   ├── gbc_config.yml
+│   ├── tsm_config.yml
+│   └── pmr_config.yml
+├── docs/
+│   └── architecture_comparison.html   # This document
+└── run_improvements.py       # Main entry point
+</pre>
+</div>
+
+<hr style="border-color:var(--border);margin:2rem 0;">
+
+<p style="text-align:center;color:var(--text-secondary);font-size:0.85rem;">
+  wavCSE Architectural Improvements — Benchmarking Study<br>
+  Generated for FYP Multi-Task Learning for Speech<br>
+  Original wavCSE: Sritharan &amp; Thayasivam (2025), IJCNLP<br>
+</p>
+
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis'
+  }
+});
+
+(async function loadMermaidDiagrams() {
+  const containers = document.querySelectorAll('.mermaid-container');
+  const fetches = Array.from(containers).map(async (container) => {
+    const src = container.getAttribute('data-src');
+    if (!src) return;
+    try {
+      const resp = await fetch(src);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      const div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = text;
+      container.replaceWith(div);
+    } catch (err) {
+      container.innerHTML = `<p style="color:red;">Failed to load diagram: ${src} (${err.message})</p>`;
+    }
+  });
+  await Promise.all(fetches);
+  await mermaid.run();
+})();
+</script>
+</body>
+</html>

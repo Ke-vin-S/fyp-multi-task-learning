@@ -1,0 +1,34 @@
+graph TD
+    subgraph "PRESERVED wavCSE Components"
+        UP["WavLM Upstream<br/>24-layer transformer, frozen"]
+        FP["Frame Pooling<br/>6 strategies on time dim"]
+        PROJ["Projector Layer<br/>Linear 1024 to 512"]
+        LP["Layer Pooling<br/>10 strategies on layer dim"]
+        HID["Hidden Layer<br/>Linear 512 to 2000"]
+        DROP["Dropout Layers<br/>0.4 and 0.6"]
+        CKPT["Checkpoint System<br/>best, opt, epoch"]
+        EVAL[Evaluation Pipeline]
+    end
+
+    subgraph "MODIFIED Components"
+        direction TB
+        GBC_MOD["GBC: Global Bias<br/>plus per-task bias projection"]
+        TSM_MOD["TSM: Latent Classifiers<br/>plus Structure Matrix A"]
+        PMR_MOD["PMR: Precision Matrix<br/>plus Cholesky and PMR Loss"]
+    end
+
+    HID --> GBC_MOD
+    HID --> TSM_MOD
+    HID --> PMR_MOD
+
+    style UP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style FP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style PROJ fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style LP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style HID fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style DROP fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style CKPT fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style EVAL fill:#0d2b1a,stroke:#3fb950,color:#3fb950
+    style GBC_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d
+    style TSM_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d
+    style PMR_MOD fill:#1a2b1a,stroke:#d2991d,color:#d2991d

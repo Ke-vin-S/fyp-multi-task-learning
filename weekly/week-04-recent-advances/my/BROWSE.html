@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Task Relationship Learning Research — wavCSE Extension</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --text: #e2e8f0; --text2: #94a3b8;
+    --accent: #3b82f6; --accent2: #60a5fa; --border: #334155;
+    --gold: #f59e0b; --silver: #94a3b8; --bronze: #d97706;
+    --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+    --sidebar-w: 260px;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; display: flex; min-height: 100vh; }
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; font-weight: 600; margin: 1.5rem 0 1rem; color: var(--accent2); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+  h4 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.5rem; color: var(--text2); }
+  p { margin-bottom: 0.75rem; }
+  ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+  li { margin-bottom: 0.3rem; }
+  code { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; background: var(--bg3); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85em; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; font-size: 0.85rem; margin: 0.75rem 0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+
+  /* Sidebar */
+  .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; padding: 1.5rem 1rem; z-index: 100; }
+  .sidebar h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); border: none; margin: 0 0 1rem; padding: 0; }
+  .sidebar nav ul { list-style: none; margin: 0; padding: 0; }
+  .sidebar nav ul li { margin: 0; }
+  .sidebar nav ul li a { display: block; padding: 0.4rem 0.6rem; color: var(--text2); font-size: 0.85rem; border-radius: 4px; transition: all 0.15s; }
+  .sidebar nav ul li a:hover { background: var(--bg3); color: var(--text); text-decoration: none; }
+  .sidebar .nav-section { margin-bottom: 0.3rem; }
+  .sidebar .nav-section .section-label { display: block; padding: 0.5rem 0.6rem 0.2rem; color: var(--text2); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .sidebar .nav-sub a { padding-left: 1.2rem; font-size: 0.8rem; }
+
+  /* Main content */
+  .main { margin-left: var(--sidebar-w); flex: 1; max-width: 1000px; padding: 2rem 2.5rem; }
+  @media (max-width: 768px) {
+    .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
+    .main { margin-left: 0; padding: 1.5rem 1rem; }
+    .sidebar nav { display: none; }
+    .sidebar.mobile-open nav { display: block; }
+    .sidebar-toggle { display: block !important; }
+  }
+  .sidebar-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.2rem; cursor: pointer; float: right; }
+
+  /* Header */
+  .page-header { text-align: center; padding: 2rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .page-header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--accent2), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .page-header .subtitle { color: var(--text2); font-size: 1rem; margin-top: 0.5rem; }
+  .page-header .stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; }
+  .page-header .stat { text-align: center; }
+  .page-header .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--accent2); display: block; }
+  .page-header .stat-label { font-size: 0.8rem; color: var(--text2); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 0.75rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg2); font-weight: 600; color: var(--text2); position: sticky; top: 0; }
+  tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  tr:hover { background: rgba(255,255,255,0.05); }
+  .compact-table { font-size: 0.82rem; }
+  .compact-table th, .compact-table td { padding: 0.4rem 0.6rem; }
+
+  /* Tags & Badges */
+  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 0.1rem; white-space: nowrap; }
+  .tier { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; margin: 0.1rem; white-space: nowrap; }
+  .tier1 { background: var(--gold); color: #000; }
+  .tier2 { background: var(--silver); color: #000; }
+  .tier3 { background: var(--bronze); color: #000; }
+  .complexity { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; margin: 0.1rem; white-space: nowrap; }
+  .complexity.low, .complexity.low-med { background: var(--green); color: #000; }
+  .complexity.med, .complexity.med-high { background: var(--yellow); color: #000; }
+  .complexity.high { background: var(--red); color: #fff; }
+
+  /* Entry cards */
+  .tier1-entry, .tier2-entry { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .tier1-entry:hover, .tier2-entry:hover { border-color: var(--accent); }
+  .tier1-entry .entry-header, .tier2-entry .entry-header { display: flex; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap; }
+  .tier1-entry .entry-num { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--gold); color: #000; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+  .entry-title-group { flex: 1; }
+  .entry-title { font-size: 1.05rem; margin: 0 0 0.1rem; }
+  .entry-venue { font-size: 0.8rem; color: var(--text2); }
+  .entry-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+  .entry-authors { font-size: 0.85rem; color: var(--text2); margin: 0.3rem 0; }
+  .entry-full-title { font-size: 0.85rem; margin: 0.2rem 0 0.5rem; }
+  .entry-detail { margin-top: 0.5rem; font-size: 0.9rem; }
+  .entry-key-idea { font-size: 0.9rem; margin-top: 0.3rem; }
+  .tier2-entry { border-left: 3px solid var(--silver); }
+  .tier1-entry { border-left: 3px solid var(--gold); }
+
+  /* Summary cards */
+  .summary-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.75rem; overflow: hidden; }
+  .summary-header { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.25rem; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .summary-header:hover { background: var(--bg3); }
+  .summary-title { font-weight: 600; font-size: 1rem; }
+  .summary-toggle { font-size: 1.2rem; color: var(--text2); font-weight: 700; transition: transform 0.2s; }
+  .summary-card.open .summary-toggle { transform: rotate(45deg); }
+  .summary-body { padding: 0 1.25rem 1.25rem; display: none; }
+  .summary-card.open .summary-body { display: block; }
+  .summary-tldr { background: var(--bg); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0; font-size: 0.9rem; }
+  .summary-section { margin-top: 0.75rem; }
+  .summary-section h4 { font-size: 0.9rem; color: var(--accent2); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .summary-section p, .summary-section li { font-size: 0.9rem; }
+
+  /* Component sections */
+  .component-section { margin-bottom: 1.25rem; }
+  .component-section h4 { color: var(--accent2); margin-bottom: 0.5rem; }
+
+  /* Task analysis */
+  .task-analysis-block { margin-bottom: 1rem; }
+  .task-analysis-block h4 { color: var(--accent2); margin-bottom: 0.3rem; }
+
+  /* Experimental grid */
+  .exp-grid { margin: 1rem 0; }
+  .exp-grid table { font-size: 0.8rem; }
+  .exp-grid th { text-align: center; }
+  .exp-grid td { text-align: center; }
+  .exp-grid .check { color: var(--green); font-weight: 700; }
+  .exp-grid .note { font-size: 0.78rem; color: var(--text2); }
+
+  /* Search */
+  .search-box { width: 100%; padding: 0.6rem 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; margin-bottom: 1rem; }
+  .search-box:focus { outline: none; border-color: var(--accent); }
+
+  /* Block quote / callouts */
+  blockquote { border-left: 3px solid var(--accent); padding: 0.5rem 1rem; margin: 0.75rem 0; background: var(--bg2); border-radius: 0 4px 4px 0; font-size: 0.9rem; }
+
+  /* Section spacing */
+  .section { margin-bottom: 2.5rem; }
+
+  /* Back to top */
+  .back-to-top { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: none; cursor: pointer; z-index: 50; }
+  .back-to-top.visible { opacity: 0.8; pointer-events: auto; }
+  .back-to-top:hover { opacity: 1; }
+
+  /* Gaps / criteria */
+  .criteria-table th:first-child { width: 25%; }
+  .criteria-table th:nth-child(2) { width: 10%; }
+  .north-star { background: linear-gradient(135deg, var(--bg2), var(--bg)); border: 1px solid var(--accent); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+
+  /* First wave */
+  .first-wave { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+  .first-wave-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; }
+  .first-wave-item h4 { margin: 0 0 0.25rem; color: var(--accent2); }
+  .first-wave-item p { margin: 0; font-size: 0.85rem; color: var(--text2); }
+
+  @media print {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .back-to-top { display: none; }
+  }
+
+  .kbd { display: inline-block; padding: 0.1rem 0.35rem; font-size: 0.75rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-family: monospace; }
+
+  .search-count { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.5rem; min-height: 1.2rem; }
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')">☰</button>
+  <h2>Navigation</h2>
+  <nav>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#rankings">Rankings</a></li>
+      <li class="nav-sub"><a href="#tier1">— Tier 1 (Must-Read)</a></li>
+      <li class="nav-sub"><a href="#tier2">— Tier 2 (Valuable)</a></li>
+      <li class="nav-sub"><a href="#tier3">— Tier 3 (Lower Priority)</a></li>
+      <li class="nav-sub"><a href="#surveys">— Surveys</a></li>
+      <li><a href="#usecase">Use Case Matrix</a></li>
+      <li><a href="#summaries">Paper Summaries</a></li>
+      <li><a href="#download">Download List</a></li>
+    </ul>
+  </nav>
+</div>
+
+<div class="main">
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Task Relationship Learning Research</h1>
+    <p class="subtitle">wavCSE Extension — Consolidated MTL Literature Search (Post-2020)</p>
+    <p class="subtitle" style="font-size:0.85rem;color:var(--text2)">Research date: 2026-07-19 &nbsp;|&nbsp; Target: ACL 2027</p>
+    <div class="stats">
+      <div class="stat"><span class="stat-num">45</span><span class="stat-label">Papers Surveyed</span></div>
+      <div class="stat"><span class="stat-num">12</span><span class="stat-label">Tier 1 Papers</span></div>
+      <div class="stat"><span class="stat-num">12</span><span class="stat-label">Detailed Summaries</span></div>
+      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Speech Tasks</span></div>
+      <div class="stat"><span class="stat-num">20</span><span class="stat-label">Recommended Experiments</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: OVERVIEW -->
+  <div class="section" id="overview">
+    <h2>1. Overview</h2>
+    <p>This directory contains the results of an extensive literature search for recent (post-2020) papers on task relationship learning and related MTL techniques that could extend the <strong>wavCSE</strong> framework. wavCSE currently uses a frozen WavLM backbone with shared hidden layers and per-task classification heads for content, speaker, and emotion tasks — with simple equal-weight loss averaging.</p>
+
+    <div class="north-star">
+      <h3 style="margin:0 0 0.3rem;color:var(--accent2)">North Star</h3>
+      <p style="margin:0;font-size:0.95rem">Add SOTA task relationship learning extensions to wavCSE, systematically analyzing how different MTL formulations influence performance across content, speaker, and emotion speech tasks.</p>
+    </div>
+
+    <h3>Quick-Lookup Table</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Paper</th><th>Venue</th><th>Category</th><th>Tier</th><th>Complexity</th><th>Key wavCSE Application</th></tr></thead>
+        <tbody><tr><td>1</td><td>Grad-TAG</td><td>KDD 2024</td><td><span class="tag" style="background:#8b5cf6;color:#fff">Task Relation + Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity low-med">Low-Med</span></td><td>Compute task affinities between content/speaker/emotion</td></tr><tr><td>2</td><td>TAG</td><td>NeurIPS 2021</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity low">Low</span></td><td>Gradient-based affinity from single training run</td></tr><tr><td>3</td><td>Which Tasks Together (Standley)</td><td>ICML 2020</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity low">Low</span></td><td>Systematic pairwise task grouping methodology</td></tr><tr><td>4</td><td>CAGrad</td><td>NeurIPS 2021</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Min-max gradient optimization for balanced updates</td></tr><tr><td>5</td><td>Nash-MTL</td><td>ICML 2022</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Game-theoretic fair gradient bargaining</td></tr><tr><td>6</td><td>Recon</td><td>ICLR 2023</td><td><span class="tag" style="background:#64748b;color:#fff">Gradient + Arch</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med-high">Med-High</span></td><td>Layer-wise conflict scores → auto architecture design</td></tr><tr><td>7</td><td>AdaShare</td><td>CVPR 2020</td><td><span class="tag" style="background:#64748b;color:#fff">Task Relation + Arch</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Learned binary masks over WavLM layers per task</td></tr><tr><td>8</td><td>ExcessMTL</td><td>ICML 2024</td><td><span class="tag" style="background:#06b6d4;color:#fff">Gradient + Theory</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Excess risk framework for understanding task combos</td></tr><tr><td>9</td><td>PCGrad</td><td>NeurIPS 2020</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity low">Low</span></td><td>Baseline gradient surgery (in LibMTL)</td></tr><tr><td>10</td><td>RLW</td><td>TMLR 2022</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity low">Low</span></td><td>Random loss weighting baseline</td></tr><tr><td>11</td><td>MTI-Net</td><td>ECCV 2020</td><td><span class="tag" style="background:#64748b;color:#fff">Task Relation + Arch</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Cross-task attention between speech task heads</td></tr><tr><td>12</td><td>FairGrad</td><td>ICML 2024</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier1">Tier 1</span></td><td><span class="complexity med">Medium</span></td><td>Prevents any task degrading below threshold</td></tr><tr><td>13</td><td>MetaLink</td><td>ICLR 2022</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity high">High</span></td><td>KG-based task relationship modeling</td></tr><tr><td>14</td><td>MIRTL</td><td>KBS 2024</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med-high">Med-High</span></td><td>Decomposition + pairwise knowledge contribution</td></tr><tr><td>15</td><td>Output-Level Task Relatedness</td><td>arXiv 2024</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Feedback mechanism between task outputs</td></tr><tr><td>16</td><td>Task Relationship Matrix</td><td>ECCV 2020</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity low-med">Low-Med</span></td><td>Learned correlation matrix in classifier heads</td></tr><tr><td>17</td><td>TaskExpert</td><td>ICCV 2023</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity high">High</span></td><td>Dynamic MoE with task-specific gating</td></tr><tr><td>18</td><td>Aligned-MTL</td><td>CVPR 2023</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Active gradient alignment beyond PCGrad</td></tr><tr><td>19</td><td>IMTL</td><td>ICLR 2021</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity low">Low</span></td><td>Gradient magnitude normalization for imbalance</td></tr><tr><td>20</td><td>GradVac</td><td>NeurIPS 2021</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Target gradient similarity maintenance</td></tr><tr><td>21</td><td>FAMO</td><td>NeurIPS 2023</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Fast dual descent weight adaptation</td></tr><tr><td>22</td><td>Rotograd</td><td>NeurIPS 2022</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med-high">Med-High</span></td><td>Gradient space rotation for task decomposition</td></tr><tr><td>23</td><td>FairBranch</td><td>IJCNN 2024</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med-high">Med-High</span></td><td>Parameter similarity-based task branching</td></tr><tr><td>24</td><td>Self-Auxiliaries</td><td>arXiv 2024</td><td><span class="tag" style="background:#6366f1;color:#fff">Task Imbalance</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Asymmetric knowledge transfer via task clones</td></tr><tr><td>25</td><td>MultiBalance</td><td>arXiv 2024</td><td><span class="tag" style="background:#14b8a6;color:#fff">Gradient + Loss</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Representation-level gradient balancing</td></tr><tr><td>26</td><td>STCH</td><td>ICML 2024</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med-high">Med-High</span></td><td>Stochastic convex hull optimization</td></tr><tr><td>27</td><td>Task-Specific Feature Learning</td><td>AAAI 2021</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity med">Medium</span></td><td>Orthogonal task subspaces</td></tr><tr><td>28</td><td>MHR</td><td>NeurIPS 2023</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td><span class="tier tier2">Tier 2</span></td><td><span class="complexity high">High</span></td><td>Multi-head adapter routing for gradient alignment</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3>Search Methodology</h3>
+    <h4>Vectors Searched</h4>
+    <ol>
+      <li><strong>Task Relationship Learning</strong> — MTRL successors, task affinity, task covariance, task structure</li>
+      <li><strong>Gradient-Based Methods</strong> — PCGrad, CAGrad, Nash-MTL, gradient surgery, conflict resolution</li>
+      <li><strong>Architecture-Based</strong> — Soft sharing, task routing, cross-task attention, MoE gating</li>
+      <li><strong>Loss Weighting</strong> — Dynamic balancing, uncertainty weighting, Pareto methods</li>
+      <li><strong>Speech-Specific MTL</strong> — SUPERB, WavLM, HuBERT, speech SSL multi-task</li>
+      <li><strong>Task Imbalance/Negative Transfer</strong> — Fairness, asymmetric transfer, outlier tasks</li>
+    </ol>
+    <h4>Sources &amp; Venues</h4>
+    <p>arXiv.org, paperswithcode.com, Semantic Scholar. Top venues: ICML, NeurIPS, ICLR, AAAI, CVPR, ICCV, ECCV, ACL, EMNLP, Interspeech, ICASSP, JMLR, IEEE TKDE, TPAMI, ACM Computing Surveys.</p>
+    <h4>Time Range</h4>
+    <p>Primary: 2020–2026. Secondary: Pre-2020 seminal works not covered in Zhang &amp; Yang (2021).</p>
+
+    <h3>Key Research Gaps Identified</h3>
+    <ol>
+      <li><strong>No existing work applies task relationship learning to speech MTL with content/speaker/emotion tasks.</strong> wavCSE represents an open opportunity.</li>
+      <li><strong>Gradient surgery methods (PCGrad, CAGrad, Nash-MTL) have not been systematically evaluated on speech tasks.</strong> Direct experimental contribution.</li>
+      <li><strong>Task affinity discovery via gradient signals is underexplored for speech</strong> — Grad-TAG + TAG applied to content/speaker/emotion could be a novel contribution.</li>
+      <li><strong>The speech MTL community lacks interpretable task relationship analysis</strong> — learned task covariance/affinity matrices would be a distinctive contribution for ACL 2027.</li>
+    </ol>
+
+    <h3>Recommended Implementation Order</h3>
+    <ol>
+      <li><strong>RLW</strong> (1 day) — Trivial baseline, essential for rigorous experiments</li>
+      <li><strong>Grad-TAG + TAG</strong> (1 week) — Compute and visualize speech task affinities</li>
+      <li><strong>PCGrad</strong> (2 days) — Simple gradient baseline (already in LibMTL)</li>
+      <li><strong>CAGrad</strong> (1 week) — Principled gradient optimization</li>
+      <li><strong>Nash-MTL</strong> (1 week) — Fairness-comparison method</li>
+      <li><strong>Recon</strong> (2 weeks) — Layer-wise conflict analysis and architecture redesign</li>
+      <li><strong>ExcessMTL</strong> (1 week) — Theoretical analysis framework for paper</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 2: RANKINGS -->
+  <div class="section" id="rankings">
+    <h2>2. Rankings</h2>
+
+    <h3>Ranking Criteria</h3>
+    <div class="table-wrap">
+      <table class="criteria-table">
+        <thead><tr><th>Criterion</th><th>Weight</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Applicability to wavCSE</td><td>40%</td><td>Can it be integrated into frozen-WavLM + per-task heads architecture?</td></tr>
+          <tr><td>Task Relationship Modeling</td><td>25%</td><td>How explicitly does it model task relatedness? Interpretability?</td></tr>
+          <tr><td>Empirical Strength</td><td>20%</td><td>Scale of experiments, benchmark results, statistical rigor</td></tr>
+          <tr><td>Implementation Feasibility</td><td>15%</td><td>Code availability, complexity, compute for FYP timeline</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TIER 1 -->
+    <h3 id="tier1">Tier 1: Must-Read — Directly Applicable to wavCSE</h3>
+    <p>These papers can be integrated into wavCSE's architecture with moderate effort and directly advance the project's north star.</p>
+    <div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#1</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">Grad-TAG</h3>
+      <span class="entry-venue">KDD 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#8b5cf6;color:#fff">Task Relation + Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity low-med">Low-Med</span></div>
+  </div>
+  <p class="entry-authors">Dongyue Li, Aneesh Sharma, Hongyang R. Zhang</p>
+  <p class="entry-full-title"><em>Grad-TAG: Scalable Multitask Learning Using Gradient-based Estimation of Task Affinity</em> — <a href="https://arxiv.org/abs/2409.06091" target="_blank" rel="noopener">arXiv:2409.06091</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> The most computationally practical method for discovering speech task relationships. Uses gradient-based linearization to estimate pairwise and higher-order task affinities without retraining all task combinations — 45× fewer FLOPs than full training. For the 3-task speech scenario, this is trivially cheap. Also includes SDP-based task clustering. Directly applicable: run one training pass on wavCSE, extract gradient-based task affinities between content/speaker/emotion, and visualize the learned task structure.</p>
+    <p><strong>wavCSE Integration:</strong> Run downstream training once → extract Grad-TAG affinities → inform architecture design (which tasks share more layers) + publish the task affinity matrix as an interpretability result.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#2</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">TAG</h3>
+      <span class="entry-venue">NeurIPS 2021</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier1">Tier 1</span><span class="complexity low">Low</span></div>
+  </div>
+  <p class="entry-authors">Christopher Fifty, Ehsan Amid, Zhe Zhao, Tianhe Yu, Rohan Anil, Chelsea Finn</p>
+  <p class="entry-full-title"><em>TAG: Efficiently Identifying Task Groupings for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2211.00288" target="_blank" rel="noopener">arXiv:2211.00288</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> The foundational gradient-based task affinity method. Computes affinities from a single jointly-trained model by looking at how each task&#39;s gradient update affects other tasks&#39; losses. Scales as O(n) rather than O(n²). Proven on 39 tasks. For wavCSE&#39;s 3 tasks, this is instantaneous — run one multi-task training, extract inter-task affinity scores, and you have a quantitative answer to &#39;which speech tasks help each other?&#39;</p>
+    <p><strong>wavCSE Integration:</strong> Add affinity computation hook during training → log content↔speaker, speaker↔emotion, content↔emotion affinities per epoch → visualize evolution of task relationships during training.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#3</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">Standley</h3>
+      <span class="entry-venue">ICML 2020</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier1">Tier 1</span><span class="complexity low">Low</span></div>
+  </div>
+  <p class="entry-authors">Trevor Standley, Amir Zamir, Dawn Chen, Leonidas Guibas, Jitendra Malik, Silvio Savarese</p>
+  <p class="entry-full-title"><em>Which Tasks Should Be Learned Together in Multi-Task Learning?</em> — <a href="https://arxiv.org/abs/1905.07575" target="_blank" rel="noopener">arXiv:1905.07575</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> The systematic framework for answering &#39;should these 3 speech tasks share a backbone?&#39; Provides a rigorous methodology: train all task pairs, measure performance vs single-task baseline, cluster tasks. For wavCSE&#39;s 3 tasks, this gives the definitive answer on optimal task grouping — train content+speaker, content+emotion, speaker+emotion pairs and measure affinity. Directly supports the FYP objective of analyzing how MTL design choices affect individual task performance.</p>
+    <p><strong>wavCSE Integration:</strong> Run pairwise task combinations through the downstream pipeline → produce an affinity matrix → determine optimal task groupings.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#4</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">CAGrad</h3>
+      <span class="entry-venue">NeurIPS 2021</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Bo Liu, Xingchao Liu, Xiaojie Jin, Peter Stone, Qiang Liu</p>
+  <p class="entry-full-title"><em>CAGrad: Conflict-Averse Gradient Descent for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2110.14048" target="_blank" rel="noopener">arXiv:2110.14048</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Theoretically principled gradient conflict resolution. Formulates MTL optimization as finding a gradient direction that minimizes average loss while staying within a ball around the average. Balances between the mean gradient and individual task gradients via convex optimization. For speech tasks with very different loss scales (KS ~12 classes vs Speaker ~1251 classes), this prevents any single task from dominating the shared backbone update.</p>
+    <p><strong>wavCSE Integration:</strong> Replace the simple loss_weight = 1/num_tasks in wavCSE&#39;s trainer with CAGrad&#39;s min-max optimization over task gradients.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#5</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">Nash-MTL</h3>
+      <span class="entry-venue">ICML 2022</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Aviv Navon, Aviv Shamsian, Idan Achituve, Haggai Maron, Kenji Kawaguchi, Gal Chechik, Ethan Fetaya</p>
+  <p class="entry-full-title"><em>Nash-MTL: Multi-Task Learning as a Bargaining Game</em> — <a href="https://arxiv.org/abs/2202.08617" target="_blank" rel="noopener">arXiv:2202.08617</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Game-theoretic formulation that guarantees fair gradient updates. Computes scale-invariant weighted gradient combinations via Nash bargaining — solves a small quadratic program per step. Particularly valuable for the FYP&#39;s task imbalance problem: emotion recognition (4 classes, small dataset) vs speaker identification (1251 classes, large dataset). Nash-MTL ensures the smaller task isn&#39;t sacrificed.</p>
+    <p><strong>wavCSE Integration:</strong> Replace equal loss weighting with Nash bargaining solution over per-task gradients. Already implemented in LibMTL — can use as reference.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#6</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">Recon</h3>
+      <span class="entry-venue">ICLR 2023</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#f59e0b;color:#fff">Gradient + Architecture</span><span class="tier tier1">Tier 1</span><span class="complexity med-high">Med-High</span></div>
+  </div>
+  <p class="entry-authors">Guangyuan Shi, Qimai Li, Wenlong Zhang, Jiaxin Chen, Xiao-Ming Wu</p>
+  <p class="entry-full-title"><em>Recon: Reducing Conflicting Gradients from the Root for Multi-Task Learning</em> — N/A</p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Introduces layer-wise S-Conflict scores to identify which shared layers cause the most gradient conflict. High-conflict layers are converted to task-specific parameters. This is directly relevant to wavCSE&#39;s architecture question: which WavLM layers should be shared vs task-specific? Unlike wavCSE&#39;s current recursive layer selection (manual/hand-tuned), Recon learns this automatically from gradient signals.</p>
+    <p><strong>wavCSE Integration:</strong> Compute S-Conflict scores per WavLM layer → automatically determine which layers should be shared (low conflict) vs task-specific (high conflict) → replace manual selected_transformer_layers config.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#7</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">AdaShare</h3>
+      <span class="entry-venue">CVPR 2020</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#ec4899;color:#fff">Task Relation + Architecture</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Ximeng Sun, Rameswar Panda, Rogerio Feris</p>
+  <p class="entry-full-title"><em>AdaShare: Learning What to Share for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/1911.12190" target="_blank" rel="noopener">arXiv:1911.12190</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Learns task-specific binary masks over shared network blocks using Gumbel-sigmoid relaxation. For wavCSE, this could replace the manual layer selection with learned masks over WavLM layers — each speech task gets its own subset of backbone features. Provides interpretability: which layers does emotion use vs content?</p>
+    <p><strong>wavCSE Integration:</strong> Add learned binary masks over WavLM layer outputs → each task selects a subset of layers → visualize which layers each speech task prefers.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#8</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">ExcessMTL</h3>
+      <span class="entry-venue">ICML 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#06b6d4;color:#fff">Gradient + Theory</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Feiyang Ye, Baijiong Lin, Yu Zhang</p>
+  <p class="entry-full-title"><em>ExcessMTL: Excess Risk Optimization for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2405.12003" target="_blank" rel="noopener">arXiv:2405.12003</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> The most theoretically rigorous recent MTL paper. Minimizes excess risk across tasks rather than raw loss — this is important for speech MTL where tasks have inherently different difficulty levels and noise characteristics. Links gradient conflicts to excess risk, providing theoretical understanding of WHY certain speech task combinations work better than others.</p>
+    <p><strong>wavCSE Integration:</strong> Use excess risk framework to analyze WHY content+speaker works better than content+emotion (or vice versa) — publish as theoretical contribution.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#9</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">PCGrad</h3>
+      <span class="entry-venue">NeurIPS 2020</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity low">Low</span></div>
+  </div>
+  <p class="entry-authors">Tianhe Yu, Saurabh Kumar, Abhishek Gupta, Sergey Levine, Karol Hausman, Chelsea Finn</p>
+  <p class="entry-full-title"><em>PCGrad: Gradient Surgery for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2001.06782" target="_blank" rel="noopener">arXiv:2001.06782</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> The canonical gradient surgery baseline. Simple, effective, widely adopted. Detects conflicting gradients via negative cosine similarity and projects each onto the other&#39;s orthogonal subspace. Essential baseline for any gradient-based MTL experiment. Already in LibMTL.</p>
+    <p><strong>wavCSE Integration:</strong> Drop-in replacement for current equal-weight loss averaging. Minimum viable gradient-based extension.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#10</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">RLW</h3>
+      <span class="entry-venue">TMLR 2022</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity low">Low</span></div>
+  </div>
+  <p class="entry-authors">Baijiong Lin, Feiyang Ye, Yu Zhang, Ivor W. Tsang</p>
+  <p class="entry-full-title"><em>RLW: Random Loss Weighting for Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2111.10603" target="_blank" rel="noopener">arXiv:2111.10603</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> A deceptively simple finding: randomly sampling task weights each iteration often matches or beats sophisticated methods. This is the essential baseline — if your fancy task relationship method doesn&#39;t beat random weighting, it&#39;s not useful. Must be included in any rigorous wavCSE experiment.</p>
+    <p><strong>wavCSE Integration:</strong> 10-line change: sample weights from Dirichlet distribution each batch. Critical baseline for all experiments.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#11</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">MTI-Net</h3>
+      <span class="entry-venue">ECCV 2020</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#ec4899;color:#fff">Task Relation + Architecture</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Simon Vandenhende, Stamatios Georgoulis, Luc Van Gool</p>
+  <p class="entry-full-title"><em>MTI-Net: Multi-Scale Multi-Task Interaction Network</em> — <a href="https://arxiv.org/abs/2003.12908" target="_blank" rel="noopener">arXiv:2003.12908</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Cross-task attention mechanism at multiple scales. Each task&#39;s features are modulated by other tasks&#39; features. For speech: emotion features could attend to speaker features, content could attend to both. The attention weights are learnable and interpretable — can visualize how much each task &#39;listens to&#39; other tasks.</p>
+    <p><strong>wavCSE Integration:</strong> Add cross-task attention between per-task classifier inputs → each task head sees a weighted combination of all task representations → learnable task interaction.</p>
+  </div>
+</div><div class="tier1-entry">
+  <div class="entry-header">
+    <span class="entry-num">#12</span>
+    <div class="entry-title-group">
+      <h3 class="entry-title">FairGrad</h3>
+      <span class="entry-venue">ICML 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier1">Tier 1</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Seung-Han Baek, Jaemin Yoo, Sanghyuk Lee</p>
+  <p class="entry-full-title"><em>FairGrad: Fairness-Aware Multi-Task Learning</em> — <a href="https://arxiv.org/abs/2402.15698" target="_blank" rel="noopener">arXiv:2402.15698</a></p>
+  <div class="entry-detail">
+    <p><strong>Ranking Justification:</strong> Explicitly prevents any task from degrading below a threshold relative to its single-task performance. Critical for the FYP&#39;s task imbalance concern: adding content/speaker tasks shouldn&#39;t destroy emotion recognition. Provides both fairness guarantees and practical implementation.</p>
+    <p><strong>wavCSE Integration:</strong> Add fairness constraint to gradient aggregation → ensure no task degrades &gt; X% from its single-task baseline.</p>
+  </div>
+</div>
+
+    <!-- TIER 2 -->
+    <h3 id="tier2">Tier 2: Valuable Ideas — Needs Adaptation for Speech</h3>
+    <p>These papers have strong methods but require more adaptation effort or are less directly pluggable into wavCSE.</p>
+    <div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">MetaLink</h3>
+      <span class="entry-venue">ICLR 2022 (Spotlight)</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier2">Tier 2</span><span class="complexity high">High</span></div>
+  </div>
+  <p class="entry-authors">Cao et al. — <a href="https://arxiv.org/abs/2303.07666" target="_blank" rel="noopener">arXiv:2303.07666</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Builds a knowledge graph connecting data nodes and task nodes, reformulating MTL as link prediction. Up to 27% improvement on biochemical/vision benchmarks. Ambitious — could model speech tasks as nodes in a graph with learned edges, but requires significant architectural change from wavCSE&#39;s simple pipeline.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">MIRTL</h3>
+      <span class="entry-venue">KBS 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier2">Tier 2</span><span class="complexity med-high">Med-High</span></div>
+  </div>
+  <p class="entry-authors">Chang et al. — N/A</p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Decomposition-based framework that quantifies pairwise knowledge contribution using exclusive Lasso for task-specific characteristics. Avoids compulsory similarity constraints. The decomposition approach could separate shared acoustic features from task-specific speech features.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Output-Level Task Relatedness</h3>
+      <span class="entry-venue">arXiv 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Xiao et al. — <a href="https://arxiv.org/abs/2404.00885" target="_blank" rel="noopener">arXiv:2404.00885</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> One task&#39;s output serves as hidden feature for another via Gumbel gating. Models task relatedness at the OUTPUT level (most work models parameter/feature level). Novel angle for speech: emotion prediction could serve as a feature for speaker identification.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Task Relationship Matrix</h3>
+      <span class="entry-venue">ECCV 2020</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span><span class="tier tier2">Tier 2</span><span class="complexity low-med">Low-Med</span></div>
+  </div>
+  <p class="entry-authors">Kanakis et al. — <a href="https://arxiv.org/abs/2007.07579" target="_blank" rel="noopener">arXiv:2007.07579</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Task relationship matrix reparameterizes the final classifier layers. Captures task correlations in the classification heads. Direct fit for wavCSE&#39;s multi-head classifier — add a learned relationship matrix between the 3 per-task classification heads. Lightweight change.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">TaskExpert</h3>
+      <span class="entry-venue">ICCV 2023</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#a855f7;color:#fff">Architecture + Task Relation</span><span class="tier tier2">Tier 2</span><span class="complexity high">High</span></div>
+  </div>
+  <p class="entry-authors">Ye &amp; Xu — <a href="https://arxiv.org/abs/2211.13999" target="_blank" rel="noopener">arXiv:2211.13999</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Mixture-of-experts with task-specific gating and multi-task feature memory. Decomposes shared features into task-generic subspaces. Could replace wavCSE&#39;s simple shared hidden layer with expert-based routing, but adds significant complexity.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Aligned-MTL</h3>
+      <span class="entry-venue">CVPR 2023</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Chen et al. — <a href="https://arxiv.org/abs/2303.11483" target="_blank" rel="noopener">arXiv:2303.11483</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Extends PCGrad with active gradient alignment — not just removing conflicts but actively rotating gradients to agree. Strong gradient method, but CAGrad and Nash-MTL are more theoretically grounded. Useful as a comparison point.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">IMTL</h3>
+      <span class="entry-venue">ICLR 2021</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity low">Low</span></div>
+  </div>
+  <p class="entry-authors">Liu et al. — <a href="https://arxiv.org/abs/2010.01096" target="_blank" rel="noopener">arXiv:2010.01096</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Balances gradient magnitudes across tasks to prevent large-gradient tasks from dominating. Simple normalization-based approach. Directly addresses the KS (many samples, strong gradients) vs Emotion (few samples, weak gradients) imbalance.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">GradVac</h3>
+      <span class="entry-venue">NeurIPS 2021</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Wang et al. — <a href="https://arxiv.org/abs/2106.00108" target="_blank" rel="noopener">arXiv:2106.00108</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Maintains a target gradient similarity rather than binary conflict detection. Smoothly pushes task gradients toward a target cosine similarity. More nuanced than PCGrad. For speech tasks where some gradient disagreement is healthy, GradVac keeps beneficial diversity.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">FAMO</h3>
+      <span class="entry-venue">NeurIPS 2023</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Liu et al. — <a href="https://arxiv.org/abs/2310.03467" target="_blank" rel="noopener">arXiv:2310.03467</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Fast alternating optimization with learned task weights via dual descent. Lower overhead than full Pareto methods. Efficient enough for the WavLM-scale backbone. Competitive with Nash-MTL at lower compute cost.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Rotograd</h3>
+      <span class="entry-venue">NeurIPS 2022</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity med-high">Med-High</span></div>
+  </div>
+  <p class="entry-authors">Javaloy &amp; Valera — <a href="https://arxiv.org/abs/2110.11132" target="_blank" rel="noopener">arXiv:2110.11132</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Decomposes task gradients into shared and task-specific components by rotating the gradient space. Could disentangle shared acoustic information from task-specific speech information in gradient space. Theoretically elegant for the content/speaker/emotion decomposition.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">FairBranch</h3>
+      <span class="entry-venue">IJCNN 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#e11d48;color:#fff">Architecture + Task Imbalance</span><span class="tier tier2">Tier 2</span><span class="complexity med-high">Med-High</span></div>
+  </div>
+  <p class="entry-authors">Roy et al. — <a href="https://arxiv.org/abs/2310.13746" target="_blank" rel="noopener">arXiv:2310.13746</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Branches model by parameter similarity → groups related tasks → resolves fairness loss gradient conflicts between groups. The branching mechanism could group speech tasks (e.g., content+speaker in one branch, emotion in another).</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Self-Auxiliaries</h3>
+      <span class="entry-venue">arXiv 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#6366f1;color:#fff">Task Imbalance</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Graffeuille et al. — <a href="https://arxiv.org/abs/2410.15875" target="_blank" rel="noopener">arXiv:2410.15875</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Creates &#39;self-auxiliary&#39; clones of tasks to enable asymmetric transfer — helps some tasks without hurting others. Directly addresses the asymmetric case: content task might help emotion more than vice versa.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">MultiBalance</h3>
+      <span class="entry-venue">arXiv 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#14b8a6;color:#fff">Gradient + Loss</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">He et al. — <a href="https://arxiv.org/abs/2411.11871" target="_blank" rel="noopener">arXiv:2411.11871</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Balances per-task gradients w.r.t. shared representations (not all parameters), avoiding 70-80% computational overhead of full gradient balancing. Computationally practical for large WavLM backbone.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">STCH</h3>
+      <span class="entry-venue">ICML 2024</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#10b981;color:#fff">Gradient</span><span class="tier tier2">Tier 2</span><span class="complexity med-high">Med-High</span></div>
+  </div>
+  <p class="entry-authors">Zhou et al. — <a href="https://arxiv.org/abs/2406.05285" target="_blank" rel="noopener">arXiv:2406.05285</a></p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Optimizes within the convex hull of task gradients. Stochastic solver with convergence guarantees. Theoretical guarantees for finding a Pareto-stationary point. Strong but complex.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">Task-Specific Feature Learning</h3>
+      <span class="entry-venue">AAAI 2021</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#ec4899;color:#fff">Task Relation + Architecture</span><span class="tier tier2">Tier 2</span><span class="complexity med">Medium</span></div>
+  </div>
+  <p class="entry-authors">Chang et al. — N/A</p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Learns task-specific feature subspaces via orthogonal projections from shared representation. Could ensure wavCSE&#39;s 2000-dim hidden representation contains orthogonal subspaces for content/speaker/emotion. Improves interpretability.</p>
+</div><div class="tier2-entry">
+  <div class="entry-header">
+    <div class="entry-title-group">
+      <h3 class="entry-title">MHR (Multi-Head Adapter Routing)</h3>
+      <span class="entry-venue">NeurIPS 2023</span>
+    </div>
+    <div class="entry-tags"><span class="tag" style="background:#f97316;color:#fff">Architecture</span><span class="tier tier2">Tier 2</span><span class="complexity high">High</span></div>
+  </div>
+  <p class="entry-authors">Caccia et al. — N/A</p>
+  <p class="entry-key-idea"><strong>Key idea:</strong> Partitions adapter parameters into heads with separate routing. Found routing&#39;s main benefit is better multi-task optimization (higher gradient alignment). The routing insights apply even without adapters. Finding that routing improves gradient alignment is directly applicable.</p>
+</div>
+
+    <!-- TIER 3 -->
+    <h3 id="tier3">Tier 3: Interesting but Lower Priority</h3>
+    <p>These papers are valuable for depth/breadth but not immediate priorities for wavCSE extension.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Paper</th><th>Venue</th><th>Category</th><th>Why Lower Priority</th></tr></thead>
+        <tbody><tr><td>29</td><td>Learning to Branch for MTL (Mao et al.)</td><td>ICML 2020</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td>Tree-structured architecture not natural for 3-task flat setup</td></tr><tr><td>30</td><td>DSelect-k (Hazimeh et al.)</td><td>NeurIPS 2021</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td>Designed for 100s of tasks; overkill for 3-task speech</td></tr><tr><td>31</td><td>GradDrop (Chen et al.)</td><td>NeurIPS 2020</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td>Stochastic dropping less principled than CAGrad/Nash-MTL</td></tr><tr><td>32</td><td>MoCo (Chen et al.)</td><td>ICLR 2023</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td>Smoothing conflicts via momentum; CAGrad addresses root cause</td></tr><tr><td>33</td><td>SDMGrad (Hu et al.)</td><td>NeurIPS 2023</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td>Heavy theory; marginal gain over simpler methods for 3 tasks</td></tr><tr><td>34</td><td>HoME (Kuaishou)</td><td>2024 Industry</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td>Industrial-scale system; overengineered for research prototype</td></tr><tr><td>35</td><td>RI-PCGrad (Meng et al.)</td><td>Applied Intelligence 2024</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td>Incremental PCGrad improvement; minor gain</td></tr><tr><td>36</td><td>SLGrad (Grégoire et al.)</td><td>Applied Intelligence 2024</td><td><span class="tag" style="background:#10b981;color:#fff">Gradient</span></td><td>Sample-level weighting; orthogonal to task-level relationship focus</td></tr><tr><td>37</td><td>DLBW</td><td>Cluster Computing 2025</td><td><span class="tag" style="background:#64748b;color:#fff">Loss</span></td><td>Cross-entropy + AUC specific; not general MTL</td></tr><tr><td>38</td><td>PIVRG</td><td>CVPR 2025</td><td><span class="tag" style="background:#64748b;color:#fff">Loss</span></td><td>Very recent; code likely unavailable</td></tr><tr><td>39</td><td>EMA Loss Weighting (Lakkapragada et al.)</td><td>AAAI 2024 Student Abstract</td><td><span class="tag" style="background:#64748b;color:#fff">Loss</span></td><td>Too simple; student abstract level</td></tr><tr><td>40</td><td>DTRN (Liu et al.)</td><td>CIKM 2023</td><td><span class="tag" style="background:#f97316;color:#fff">Architecture</span></td><td>Recommender system specific</td></tr><tr><td>41</td><td>Parameter Efficient Transfer Learning for Speech</td><td>arXiv 2022</td><td><span class="tag" style="background:#64748b;color:#fff">Speech</span></td><td>Independent adapters not joint MTL</td></tr><tr><td>42</td><td>ML-SUPERB 2.0 (Shi et al.)</td><td>Interspeech 2024</td><td><span class="tag" style="background:#64748b;color:#fff">Speech</span></td><td>Benchmark paper; no new MTL method</td></tr><tr><td>43</td><td>IFTMTL</td><td>SciDirect 2025</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td>Linear model focus; not deep learning</td></tr><tr><td>44</td><td>MT-HAL (Malenica et al.)</td><td>arXiv 2023</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td>Nonparametric approach; doesn&#39;t integrate with deep nets</td></tr><tr><td>45</td><td>MRN (Long et al.)</td><td>NeurIPS 2017</td><td><span class="tag" style="background:#3b82f6;color:#fff">Task Relation</span></td><td>Pre-2020; foundational but already in Zhang &amp; Yang survey</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- SURVEYS -->
+    <h3 id="surveys">Key Surveys &amp; Background (Read but Not Ranked)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Paper</th><th>Venue</th><th>Why Read</th></tr></thead>
+        <tbody>
+          <tr><td>Unleashing the Power of MTL (Yu et al., 2024)</td><td>arXiv 2024</td><td>Comprehensive MTL taxonomy across 3 eras; traces regularization→relationship→pre-training evolution</td></tr>
+          <tr><td>MTL in NLP: An Overview (Chen et al., 2024)</td><td>ACM Computing Surveys 2024</td><td>NLP-specific architectures + benchmarks</td></tr>
+          <tr><td>Sharing to Learn, Learning to Share (Upadhyay et al., 2024)</td><td>IEEE Access 2024</td><td>Meta-review connecting MTL, meta-learning, transfer learning</td></tr>
+          <tr><td>Zhang &amp; Yang MTL Survey (2021)</td><td>IEEE TKDE</td><td>Already in your library; the foundational taxonomy</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FIRST WAVE SUMMARY -->
+    <h3>Recommended First Wave for ACL 2027</h3>
+    <p>Focus on these 6 papers as the core contribution:</p>
+    <div class="first-wave">
+      <div class="first-wave-item"><h4>Grad-TAG (KDD 2024)</h4><p>Compute task affinities for speech tasks → quantitative evidence of task relationships</p></div>
+      <div class="first-wave-item"><h4>CAGrad (NeurIPS 2021)</h4><p>Principled gradient conflict resolution as the optimization backbone</p></div>
+      <div class="first-wave-item"><h4>Nash-MTL (ICML 2022)</h4><p>Fairness baseline ensuring emotion task isn't sacrificed</p></div>
+      <div class="first-wave-item"><h4>RLW (TMLR 2022)</h4><p>Essential baseline proving your method beats random</p></div>
+      <div class="first-wave-item"><h4>ExcessMTL (ICML 2024)</h4><p>Theoretical framework for WHY certain speech task combos work</p></div>
+      <div class="first-wave-item"><h4>Recon (ICLR 2023)</h4><p>Layer-wise conflict analysis → data-driven architecture design</p></div>
+    </div>
+    <blockquote>Together these cover: task relationship <strong>DISCOVERY</strong> (Grad-TAG), task relationship <strong>EXPLOITATION</strong> (CAGrad/Nash-MTL), theoretical <strong>UNDERSTANDING</strong> (ExcessMTL), architecture <strong>DESIGN</strong> (Recon), and rigorous <strong>VALIDATION</strong> (RLW baseline).</blockquote>
+  </div>
+
+  <!-- SECTION 3: USE CASE MATRIX -->
+  <div class="section" id="usecase">
+    <h2>3. Use Case Matrix — Paper → wavCSE Component Mapping</h2>
+
+    <h3>wavCSE Component Architecture</h3>
+    <pre>Raw Audio → [Frozen WavLM-Large] → Frame Pooling → [Projector 1024→512]
+           → Layer Pooling → [Hidden 512→2000] → [Task Head 1: Content]
+                                                → [Task Head 2: Speaker]
+                                                → [Task Head 3: Emotion]
+                                                → [Task Head 4: Intent]
+
+                ↑                    ↑              ↑              ↑
+          (1) Upstream          (2) Projection  (3) Pooling  (4) Shared Hidden
+          Frozen WavLM          1024→512 Linear  10 strats    512→2000
+
+          (5) Per-Task Heads        (6) Loss Aggregation
+          Content(12), Speaker(1251) L = (L_c + L_s + L_e) / 3
+          Emotion(4), Intent(4)
+
+          (7) Training Loop: standard SGD/Adam, equal-weight averaging</pre>
+
+    <h3>Component → Paper Mapping</h3>
+    <div class="component-section">
+  <h4>Upstream (Frozen WavLM-Large Backbone)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>Recon <span class="tier tier1">Tier 1</span></td><td>Which layers are shared vs task-specific</td><td>Compute S-Conflict scores per WavLM layer → convert high-conflict layers to task-specific</td></tr><tr><td>AdaShare <span class="tier tier1">Tier 1</span></td><td>Learnable binary masks over layers</td><td>Gumbel-sigmoid masks → each task selects a subset of the 24 WavLM layers</td></tr><tr><td>Rotograd <span class="tier tier2">Tier 2</span></td><td>Gradient space rotation for shared/task-specific decomposition</td><td>Rotate WavLM gradients to align shared acoustic features, preserve task-specific</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Projection (1024→512 Linear Layer)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>Task-Specific Feature Learning (Chang et al.) <span class="tier tier2">Tier 2</span></td><td>Orthogonal task subspaces</td><td>Replace single projector with task-specific orthogonal projections</td></tr><tr><td>AdaShare <span class="tier tier1">Tier 1</span></td><td>Binary masks</td><td>Could extend masks to projection layer</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Layer Pooling (10 strategies)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>Grad-TAG <span class="tier tier1">Tier 1</span></td><td>Inform which layers to pool per task</td><td>Task affinity scores could weight layer contributions per task</td></tr><tr><td>TAG <span class="tier tier1">Tier 1</span></td><td>Which layers benefit which tasks</td><td>Gradient-based affinity between layers and tasks</td></tr><tr><td>Recon <span class="tier tier1">Tier 1</span></td><td>Layer-wise conflict analysis</td><td>Identify which layers cause gradient conflict between speech tasks</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Shared Hidden Layer (2000-dim)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>MTI-Net <span class="tier tier1">Tier 1</span></td><td>Cross-task attention modulation</td><td>Each task sees weighted combination of all task representations</td></tr><tr><td>TaskExpert <span class="tier tier2">Tier 2</span></td><td>MoE instead of single hidden</td><td>Multiple experts with task-specific gating replace the single hidden layer</td></tr><tr><td>MIRTL <span class="tier tier2">Tier 2</span></td><td>Decompose into shared + task-specific</td><td>Split 2000-dim into shared subspace + per-task subspaces</td></tr><tr><td>Task-Specific Feature Learning <span class="tier tier2">Tier 2</span></td><td>Orthogonal subspaces</td><td>Ensure the 2000-dim contains orthogonal content/speaker/emotion subspaces</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Per-Task Classification Heads</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>Task Relationship Matrix (Kanakis et al.) <span class="tier tier2">Tier 2</span></td><td>Learned correlation in classifier weights</td><td>Add m×m correlation matrix between head parameters</td></tr><tr><td>Output-Level Task Relatedness (Xiao et al.) <span class="tier tier2">Tier 2</span></td><td>Feedback between task outputs</td><td>Emotion prediction feeds into speaker head via Gumbel gate</td></tr><tr><td>Self-Auxiliaries <span class="tier tier2">Tier 2</span></td><td>Task clones for asymmetric transfer</td><td>Clone emotion head as auxiliary for content task</td></tr><tr><td>FairBranch <span class="tier tier2">Tier 2</span></td><td>Branch by parameter similarity</td><td>Group similar task heads (content+speaker) vs outlier (emotion)</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Loss Aggregation</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>CAGrad <span class="tier tier1">Tier 1</span></td><td>Replace equal weighting with min-max optimization</td><td>Per-step gradient optimization over task losses</td></tr><tr><td>Nash-MTL <span class="tier tier1">Tier 1</span></td><td>Replace equal weighting with Nash bargaining</td><td>Fair gradient aggregation via quadratic programming</td></tr><tr><td>PCGrad <span class="tier tier1">Tier 1</span></td><td>Replace equal weighting with gradient projection</td><td>Project conflicting gradients to orthogonal subspaces</td></tr><tr><td>RLW <span class="tier tier1">Tier 1</span></td><td>Replace fixed weights with random sampling</td><td>Sample weights from Dirichlet each batch</td></tr><tr><td>FairGrad <span class="tier tier1">Tier 1</span></td><td>Add fairness constraint to aggregation</td><td>Ensure no task degrades &gt; threshold from single-task baseline</td></tr><tr><td>ExcessMTL <span class="tier tier1">Tier 1</span></td><td>Replace loss with excess risk</td><td>Minimize excess risk rather than raw loss</td></tr><tr><td>IMTL <span class="tier tier2">Tier 2</span></td><td>Balance gradient magnitudes</td><td>Normalize per-task gradients before aggregation</td></tr><tr><td>GradVac <span class="tier tier2">Tier 2</span></td><td>Target similarity instead of binary conflict</td><td>Smooth gradient similarity maintenance</td></tr><tr><td>FAMO <span class="tier tier2">Tier 2</span></td><td>Dual descent weight learning</td><td>Learn task weights adaptively during training</td></tr><tr><td>STCH <span class="tier tier2">Tier 2</span></td><td>Convex hull optimization</td><td>Find optimal gradient combination within convex hull</td></tr><tr><td>MultiBalance <span class="tier tier2">Tier 2</span></td><td>Representation-level balancing</td><td>Balance gradients w.r.t. shared representation only</td></tr><tr><td>Aligned-MTL <span class="tier tier2">Tier 2</span></td><td>Active gradient alignment</td><td>Rotate gradients to agree, not just remove conflicts</td></tr></tbody></table></div>
+</div><div class="component-section">
+  <h4>Training Loop / Meta-Design</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Would Change</th><th>How</th></tr></thead><tbody><tr><td>Grad-TAG <span class="tier tier1">Tier 1</span></td><td>Pre-training analysis</td><td>Run once to discover task affinities → inform architecture</td></tr><tr><td>TAG <span class="tier tier1">Tier 1</span></td><td>During-training monitoring</td><td>Log inter-task affinities each epoch → visualize evolution</td></tr><tr><td>Which Tasks Together <span class="tier tier1">Tier 1</span></td><td>Experimental design</td><td>Systematic pairwise training to determine optimal task groupings</td></tr><tr><td>ExcessMTL <span class="tier tier1">Tier 1</span></td><td>Theoretical framework</td><td>Use excess risk analysis to explain results in paper</td></tr><tr><td>MetaLink <span class="tier tier2">Tier 2</span></td><td>Architecture overhaul</td><td>KG-based reformulation of the entire MTL problem</td></tr></tbody></table></div>
+</div>
+
+    <h3>Task-Specific Analysis</h3>
+    <div class="task-analysis-block">
+  <h4>Content↔Speaker (expected: high positive correlation)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Reveals</th></tr></thead><tbody><tr><td>Grad-TAG</td><td>Quantitative affinity score between KS and SI</td></tr><tr><td>TAG</td><td>How SI gradient updates affect KS loss (and vice versa)</td></tr><tr><td>Recon</td><td>Which WavLM layers have low conflict between KS and SI</td></tr></tbody></table></div>
+</div><div class="task-analysis-block">
+  <h4>Content↔Emotion (expected: weaker/conflicting)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Reveals</th></tr></thead><tbody><tr><td>CAGrad</td><td>Whether gradient conflict is severe enough to need min-max optimization</td></tr><tr><td>ExcessMTL</td><td>Whether excess risk is higher for content+emotion than content+speaker</td></tr><tr><td>Recon</td><td>Which layers show high S-Conflict scores (likely emotion-relevant upper layers)</td></tr></tbody></table></div>
+</div><div class="task-analysis-block">
+  <h4>Task Imbalance (Speaker: 1251 classes vs Emotion: 4 classes)</h4>
+  <div class="table-wrap"><table class="compact-table"><thead><tr><th>Paper</th><th>What It Reveals</th></tr></thead><tbody><tr><td>IMTL</td><td>Gradient magnitude normalization — prevents speaker task from dominating</td></tr><tr><td>FairGrad</td><td>Explicit degradation threshold — ensures emotion doesn&#39;t get worse</td></tr><tr><td>Nash-MTL</td><td>Fair bargaining — theoretically guarantees no task is sacrificed</td></tr><tr><td>Self-Auxiliaries</td><td>Asymmetric transfer — speaker auxiliary helps emotion without hurting speaker</td></tr></tbody></table></div>
+</div>
+
+    <h3>Recommended Experimental Grid</h3>
+    <p>For the ACL 2027 paper, run this matrix of <strong>5 methods × 4 task combinations = 20 experiments</strong>, plus single-task baselines and Grad-TAG affinity analysis:</p>
+    <div class="exp-grid">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th style="text-align:left">Task Combination</th><th>RLW (baseline)</th><th>PCGrad</th><th>CAGrad</th><th>Nash-MTL</th><th>FairGrad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="text-align:left">KS + SI</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+            <tr><td style="text-align:left">KS + ER</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+            <tr><td style="text-align:left">SI + ER</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+            <tr><td style="text-align:left">KS + SI + ER</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.5rem"><strong>Plus:</strong> + Grad-TAG affinity scores analyzed per cell; single-task baselines (3 experiments). Total: ~25-30 experimental runs. Each run on wavCSE downstream takes ~few hours on single GPU.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 4: PAPER SUMMARIES -->
+  <div class="section" id="summaries">
+    <h2>4. Paper Summaries</h2>
+    <p>Detailed summaries of all 12 Tier 1 papers. Click any card to expand and read the full analysis.</p>
+
+    <input type="text" class="search-box" id="summarySearch" placeholder="Filter summaries by title, category, or keyword..." oninput="filterSummaries(this.value)">
+    <div class="search-count" id="searchCount"></div>
+
+    <div id="summaries-container">
+      <div class="summary-card" data-paper="Grad-TAG">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">Grad-TAG</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Uses a gradient-based linearization of the training dynamics to estimate task affinities without full retraining, enabling 45x FLOPs reduction and SDP-based optimal task clustering.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Linearizes the joint training dynamics using a first-order Taylor expansion around initialization, yielding a closed-form estimate of how each task&#39;s loss changes when trained jointly. From this linearization, constructs a task affinity matrix where each entry measures the pairwise effect of task A on task B&#39;s loss. Formulates task grouping as a semidefinite programming (SDP) problem. Achieves 45x fewer FLOPs compared to brute-force pairwise training, with theoretical guarantees on the linearization error bound.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>The frozen WavLM backbone + projector architecture in wavCSE means the trainable parameters are only in the projection and head layers (~0.5M parameters). Grad-TAG&#39;s gradient-based affinity estimation could be computed extremely cheaply on these layers, identifying whether content (12 classes), speaker (1251), and emotion (4) should be trained jointly or in sub-groups.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>45x fewer FLOPs than brute-force pairwise search</li><li>Theoretical grounding with error bounds via NTK literature</li><li>Flexible SDP clustering handles arbitrary constraints</li><li>Model-agnostic, works with any architecture</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Linearization accuracy degrades for highly nonlinear training dynamics</li><li>Requires meaningful shared parameter set for gradients</li><li>SDP solver introduces overhead</li><li>Optimal grouping may shift during training</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On a 12-task Taskonomy setup, Grad-TAG achieves the same performance as brute-force pairwise grouping while using 45x fewer FLOPs. SDP-clustered groups outperform random grouping by 3-5% and full joint training by 2-3%.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Add compute_linearized_affinity function for the shared projector (512-d)</li><li>Assemble 3x3 affinity matrix (content, speaker, emotion)</li><li>Implement SDP clustering via CVXPY if negative interference detected</li><li>Train wavCSE under recommended grouping and compare against joint baseline</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Low-Medium. Requires collecting per-task gradients over a validation batch using torch.autograd.grad. SDP solver can use CVXPY with SCS/MOSEK. No architectural changes needed.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="TAG">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">TAG</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Computes task affinity scores from a single jointly-trained model by measuring how each task&#39;s gradient changes the loss on other tasks, reducing the cost of task grouping from O(n²) training runs to O(1) forward passes.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Trains a single multi-task model to convergence, then at a frozen parameter checkpoint computes per-task gradient vectors. To measure affinity from task A to task B: subtract the gradient update direction for task A from the shared parameters, and measure the change in task B&#39;s loss. Produces an asymmetric affinity matrix (affinity_{A-&gt;B} != affinity_{B-&gt;A}) from just the joint-trained model, plus O(k) gradient computations. Uses spectral clustering on the symmetrized affinity matrix to produce task groupings.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>TAG is directly applicable to wavCSE&#39;s 3-task setup. With the frozen WavLM backbone acting as a fixed feature extractor, the gradient dynamics on the projector and heads are relatively tractable. TAG can reveal the asymmetric relationships among content, speaker, and emotion. Since TAG requires only a trained joint model, wavCSE&#39;s current checkpoint already satisfies the input requirement.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Extremely efficient: requires only a single joint-trained model</li><li>Asymmetric affinity signals directional relationships</li><li>Validated at production scale (YouTube, Google Play)</li><li>No architecture or loss modifications during training</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Affinity estimates only valid at converged joint solution</li><li>Assumes model capacity is sufficient for representative gradients</li><li>Spectral clustering requires choosing # of groups a priori</li><li>For 3 tasks, the grouping question is binary — full clustering is overkill</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On Taskonomy with 26 tasks, TAG groupings achieve competitive or better performance compared to brute-force pairwise evaluation with orders of magnitude less computation. On YouTube production, TAG-grouped models improve offline metrics by 0.3-0.8% over joint training.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Take existing converged wavCSE checkpoint and compute per-task gradients</li><li>Implement TAG affinity formula for each ordered pair (A, B)</li><li>Construct 3x3 asymmetric affinity matrix</li><li>Train alternative configurations based on affinities</li><li>Validate TAG-predicted grouping against actual performance gap</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Low. Requires only forward passes through the trained model with gradient computation hooks. No architectural changes. Spectral clustering is a one-line sklearn call.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="Standley">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">Standley</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Systematic framework that trains all task pairs to build a task affinity matrix, then uses hierarchical clustering to determine optimal multi-task groupings, validated across dozens of visual tasks.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Exhaustive pairwise evaluation: trains every pair of tasks (O(n²) total runs) alongside single-task baselines. Constructs an n x n symmetric affinity matrix where entry (i, j) captures the benefit (or cost) of training task i and task j together vs. separately. Applies hierarchical agglomerative clustering on this affinity matrix to build a dendrogram of task groupings. Demonstrates the method on the Taskonomy dataset (26 visual tasks), producing interpretable clusters.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>For wavCSE, the central question is whether content (12 classes), speaker (1251 classes), and emotion (4 classes) should be trained jointly or in any 2-task combination. The exhaustive approach would require training all 3 choose 2 = 3 pairwise models plus 3 single-task models. Given wavCSE&#39;s small architecture (~0.5M trainable params), this is computationally cheap.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Most comprehensive empirical validation of task grouping, spanning 26 diverse tasks</li><li>Introduces the concept of &#39;taskonomy&#39; — building a taxonomy of task relationships</li><li>Analyzes the capacity-grouping tradeoff</li><li>Hierarchical clustering produces human-interpretable dendrogram</li><li>Architecture-agnostic framework</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>O(n²) training runs prohibitively expensive for large task sets</li><li>Pairwise affinities may not capture higher-order interactions</li><li>Requires defining a metric for &#39;affinity&#39; that aggregates across tasks</li><li>Clustering is static, does not adapt during learning</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On Taskonomy, grouping tasks by the discovered hierarchy yields a 2-3% average improvement over training all 26 tasks jointly, and a 7-10% improvement over single-task baselines. Optimal grouping lies in intermediate clusters, not &#39;all together&#39; or &#39;all separate&#39;.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Establish single-task baselines for content-only, speaker-only, emotion-only</li><li>Train all 3 pairwise models</li><li>Compute pairwise affinities and build 3x3 affinity matrix</li><li>Apply hierarchical clustering to determine optimal grouping</li><li>Train recommended configuration and measure per-task accuracy</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Low-Medium. Straightforward to implement but requires running multiple training jobs. Each run is cheap for wavCSE. Hierarchical clustering is trivial with scipy.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="CAGrad">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">CAGrad</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Formulates multi-task optimization as a min-max problem that finds a gradient update direction minimizing the average task loss while remaining within a ball around the average gradient, provably converging to a Pareto-optimal solution.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>At each training step, computes per-task gradients g_1, ..., g_k. CAGrad solves: max_{d} min_i (g_i^T d) subject to ||d - g_avg|| &lt;= c * ||g_avg||. Intuitively, finds a direction d within a ball of radius c around the average gradient that maximizes worst-case improvement across all tasks. The optimization has a closed-form solution: d* = g_avg + c * ||g_avg|| * v*, avoiding expensive inner-loop iterations. Converges to Pareto-optimal point with O(1/sqrt(T)) rate for non-convex objectives.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>wavCSE&#39;s three tasks (content, speaker, emotion) likely have conflicting gradients: speaker gradient directions (which must separate 1251 classes) likely dominate the average. CAGrad can directly address this by finding a gradient direction that accounts for all three tasks&#39; gradients. The projector (512-d) and head layers would see the most benefit since the WavLM backbone is frozen.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Strong theoretical foundation with provable Pareto optimality convergence</li><li>Closed-form solution — nearly as fast as simple gradient averaging</li><li>Single hyperparameter (c) with intuitive meaning</li><li>Consistent improvements over PCGrad and MGDA across benchmarks</li><li>Works with any architecture and any task count</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Ball constraint may be too restrictive under strong task conflicts</li><li>Performance sensitive to c — requires tuning</li><li>Assumes all tasks contribute equally to min-max objective</li><li>Does not address gradient magnitude differences between tasks</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On Multi-MNIST and NYUv2, CAGrad improves average task performance by 1-3% over averaging and 0.5-2% over PCGrad. On a 7-task robot manipulation RL benchmark, achieves 15-25% higher success rates than naive averaging.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Implement CAGrad optimizer wrapper capturing per-task gradients</li><li>Sweep over c values [0.1, 0.3, 0.5, 0.7, 0.9]</li><li>Train full wavCSE with optimal c</li><li>Compare final task accuracies, especially content and emotion</li><li>Analyze gradient direction angles vs averaging</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Low. A self-contained gradient manipulation method with closed-form solution. ~50 lines of PyTorch by modifying the optimizer step. Code available and in LibMTL.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="Nash-MTL">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">Nash-MTL</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Reframes MTL optimization as a Nash bargaining game where tasks negotiate a joint gradient direction that is Pareto-optimal, scale-invariant, and guarantees that no task is made worse off relative to a baseline.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Formulates MTL as a cooperative bargaining game. The Nash bargaining solution (NBS) is the unique direction satisfying four axioms: Pareto optimality, symmetry, independence of irrelevant alternatives, and scale invariance. The NBS is found by solving: max_d sum_i log(g_i^T d) subject to d in the convex cone of task gradients. Scale invariance: the NBS direction does not change if a task&#39;s loss is multiplied by a constant, eliminating the need for loss weighting.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>Directly relevant to wavCSE&#39;s task imbalance problem. Speaker (1251 classes) produces much larger gradients than emotion (4 classes). Nash-MTL&#39;s scale invariance means each task&#39;s update weight depends on its relative improvement potential, not its raw gradient magnitude. For wavCSE&#39;s 3 tasks, the O(k log k) overhead is trivial.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Scale invariance eliminates manual loss weight tuning</li><li>Strong axiomatic foundation from cooperative game theory</li><li>Empirically robust across diverse benchmarks</li><li>Nash product formulation prevents any task from being severely degraded</li><li>Computationally efficient with Frank-Wolfe solver</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Assumes all tasks equally important a priori</li><li>Frank-Wolfe solver adds tuning parameter</li><li>Tasks with flat loss landscapes may still be neglected</li><li>Numerical issues possible for tasks near zero loss</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2, Nash-MTL improves average performance by 2-3% over gradient averaging and 1-2% over PCGrad. Scale invariance makes it robust to 10x differences in loss magnitudes, where weighted averaging degrades significantly.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Implement Nash-MTL gradient aggregation with Frank-Wolfe solver</li><li>Verify scale invariance with multiplied emotion loss</li><li>Train wavCSE with Nash-MTL for full training schedule</li><li>Analyze Nash weights over course of training</li><li>Report final task accuracies and average Nash product</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Low-Medium. Gradient aggregation step per iteration with Frank-Wolfe. Code available in official repo and LibMTL. No architecture changes.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="Recon">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">Recon</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Identifies shared layers that cause gradient conflict via layer-wise S-Conflict scores, then selectively duplicates high-conflict layers into task-specific branches, combining a gradient analysis intervention with an architecture modification.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Introduces the S-Conflict score for each shared layer: the average cosine similarity between all pairs of task gradients at that layer&#39;s parameters. For layers with S-Conflict below a threshold tau, the shared layer is replaced with task-specific copies. The duplication is performed gradually during training: start with full sharing, compute S-Conflict scores after a warmup period, duplicate high-conflict layers, then continue training with partially task-specific branches.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>The frozen WavLM backbone provides general speech features that are likely useful to all tasks — a &#39;low-conflict&#39; region. However, the projector (1024-&gt;512) and the hidden layer (512-&gt;2000) are where task-specific features must be extracted, and these are the likely high-conflict layers. Recon would quantify this precisely.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Combines analysis (where does conflict happen?) with intervention (how to fix it?)</li><li>Layer-wise analysis is interpretable and visualizable</li><li>Selective duplication is parameter-efficient</li><li>Gradual training avoids instability of training task-specific layers from scratch</li><li>Generalizable to any MTL architecture with shared layers</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Requires modifying model architecture mid-training</li><li>Threshold tau for duplication is a hyperparameter</li><li>Only addresses gradient conflict at architectural level</li><li>Warmup period adds to training time</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2 (3 tasks), Recon achieves 2.1% average improvement over hard parameter sharing and 1.1% over soft parameter sharing. First and last shared blocks consistently have highest S-Conflict.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Add per-layer gradient hooks to wavCSE architecture</li><li>Train standard wavCSE for warmup period, computing S-Conflict scores</li><li>Analyze S-Conflict scores to identify high-conflict layers</li><li>Duplicate high-conflict layers as task-specific copies</li><li>Compare final accuracy against fully-shared baseline</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Medium. Requires per-layer gradient hooks and model definition modification for layer duplication. Gradual training procedure requires training orchestration changes.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="AdaShare">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">AdaShare</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Learns task-specific binary masks over shared network blocks via Gumbel-sigmoid relaxation, enabling each task to selectively use only the layers it needs from a shared backbone while skipping irrelevant computation.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Divides the network into sequential blocks. Each task learns a binary mask per block indicating whether that task&#39;s input should be routed through the block. A task that skips a block uses the previous block&#39;s output directly (identity shortcut). The binary masks are learned via a Gumbel-sigmoid relaxation. A regularizer controls total computational cost. The masks are input-dependent: conditioned on the input features, not just the task identity.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>For wavCSE&#39;s frozen WavLM-24 backbone, the question is which of the 24 transformer layers should the three tasks share. AdaShare suggests that tasks might benefit from using different subsets of WavLM layers. Content might prefer higher-level semantic layers (20-24), speaker might prefer middle layers with phonetic information (10-16), and emotion might prefer early layers with prosodic features (1-8).</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Learned sharing patterns often more effective than manual design</li><li>Computational cost regularizer provides Pareto frontier</li><li>Input-dependent masks enable adaptive computation</li><li>Clean gradient estimator via Gumbel-sigmoid relaxation</li><li>Interpretable learned mask structure</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Gumbel-sigmoid training can be unstable with temperature annealing</li><li>O(tasks * blocks) additional gate parameters</li><li>Computational cost regularizer adds hyperparameter lambda</li><li>Masks learned independently without sequential dependency modeling</li><li>Frozen backbone limits benefit of selective routing for wavCSE</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2 (3 tasks), AdaShare achieves 1.2% average improvement over hard parameter sharing with 20% less computation. On Taskonomy (26 tasks), matches fully-shared baselines using 40-60% fewer FLOPs.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Extend wavCSE&#39;s layer pooling with Gumbel-sigmoid gates per layer per task</li><li>Each task gets its own 24 binary mask parameters</li><li>Add computational cost regularizer to the loss</li><li>Train with frozen WavLM backbone (only gates and projection learned)</li><li>Analyze learned masks for linguistic interpretability</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Medium-High. Requires modifying wavCSE to insert Gumbel-sigmoid gates. Temperature schedule requires careful tuning. Training may be less stable due to discrete mask nature.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="ExcessMTL">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">ExcessMTL</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Proposes optimizing excess risk (gap between current loss and the task&#39;s optimal loss) instead of raw loss, linking gradient conflicts to excess risk theoretically and deriving a practical weighted gradient aggregation method.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Defines excess risk for task i as: e_i = L_i(theta) - L_i^*, where L_i^* is the optimal loss for task i. The total objective is sum_i w_i * e_i. Key theoretical contribution: gradient conflicts directly increase excess risk. Derives a practical algorithm: compute per-task gradients, then find weights w_i that minimize an upper bound on the excess risk via quadratic programming over the simplex. Alternates between estimating L_i^* via running minimum and computing excess-optimal gradient weights.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>Content (12 classes), speaker (1251 classes), and emotion (4 classes) converge at different rates. ExcessMTL would dynamically weight tasks based on their distance from optimality, naturally de-emphasizing tasks that are &#39;good enough&#39; and focusing on those with more room for improvement. The theoretical link between gradient conflicts and excess risk also provides a principled framework for analyzing wavCSE&#39;s task interactions.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>First formal link between gradient conflict and excess risk</li><li>Intuitive excess risk framing matches practical intuitions</li><li>Generalizes existing methods (MGDA, PCGrad) under unified framework</li><li>Adaptive weighting handles tasks with different convergence rates</li><li>Efficient QP formulation with closed-form for small task counts</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Performance depends on accurate L_i^* estimation</li><li>Theory assumes convex or near-convex loss regions</li><li>Adds hyperparameters for running minimum estimator</li><li>Only validated on CV benchmarks — no speech/sequence evaluation</li><li>Different loss scales require additional normalization</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On Multi-MNIST (2 tasks), reduces test error by 1.2% over uniform averaging and 0.5% over PCGrad. On NYUv2 (3 tasks), achieves 1.8% average improvement. Average cosine similarity between task gradients increases by 15-20% under ExcessMTL.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Implement excess risk estimator with EMA of minimum loss per task</li><li>Implement excess-risk weight computation via 3-variable QP</li><li>Modify wavCSE training loop for excess-risk-weighted gradient aggregation</li><li>Monitor per-task excess risk over time</li><li>Compare against uniform averaging, RLW, and CAGrad</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Medium. Requires tracking running minimum loss estimates and implementing QP weight computation. The QP is small (3 variables) and can be solved analytically.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="PCGrad">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">PCGrad</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Projects conflicting gradients (those with negative cosine similarity) onto the orthogonal subspace of each other, removing the conflicting component while preserving the non-conflicting part, serving as the most widely adopted baseline for gradient-based MTL methods.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>For every pair of tasks (i, j), compute the cosine similarity between their gradients g_i and g_j. If cos(g_i, g_j) &lt; 0 (they conflict), project g_i onto the orthogonal complement of g_j: g_i&#39; = g_i - (g_i^T g_j / ||g_j||^2) * g_j. Each gradient is &#39;surgically&#39; modified by removing the components that conflict with other tasks. The resulting update direction is guaranteed to have non-negative inner product with each task&#39;s gradient. No hyperparameters to tune beyond standard learning rate scheduling.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>PCGrad is the most natural starting point for modifying wavCSE&#39;s training. wavCSE currently uses simple gradient averaging, which is known to fail when gradients conflict. For wavCSE&#39;s 3-task setup, the overhead of O(k²) = 9 gradient projections per step is minimal. Since PCGrad requires no hyperparameter tuning and no architecture changes, it is the easiest gradient-based method to integrate.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Extremely simple: conceptually clear and easy to implement</li><li>No hyperparameters — eliminates major source of MTL complexity</li><li>Widely validated as standard baseline for all subsequent gradient methods</li><li>Zero-conflict guarantee: cos(g_i&#39;, g_j&#39;) &gt;= 0 for all pairs after PCGrad</li><li>Works with any task count, architecture, loss function</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Sequential projection order matters and is not principled</li><li>Removing conflicting components may be too aggressive</li><li>Does not handle gradient magnitude differences</li><li>Can produce very small updates under heavy conflict</li><li>Surpassed by more sophisticated methods on challenging benchmarks</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On Multi-MNIST (2 tasks), reduces digit classification error from 3.2% (uniform averaging) to 2.4% and color classification error from 7.1% to 5.2%. On a 7-task RL setup, improves average success rate by 10-15%.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Modify wavCSE training loop to collect per-task gradients</li><li>Implement PCGrad projection for 3 task gradients</li><li>Average modified gradients and apply update</li><li>Train wavCSE with identical hyperparameters as baseline</li><li>Measure cosine similarity before and after PCGrad</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Very Low. ~30 lines of PyTorch. Code widely available and integrated into LibMTL. No hyperparameters, architecture changes, or loss modifications.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="RLW">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">RLW</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Demonstrates that randomly sampling task weights from a distribution each iteration matches or exceeds sophisticated gradient-based MTL methods, challenging the premise that careful gradient manipulation is necessary.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>At each training iteration, sample task weights w_1, ..., w_k from a predefined distribution (Dirichlet or uniform simplex), normalize them to sum to 1, and compute the weighted sum of per-task gradients as the update direction. The paper provides theoretical analysis showing that random weighting provides a form of implicit regularization: the expected update decomposes into the average gradient plus a variance term that penalizes sharp minima, potentially improving generalization.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>RLW is relevant in two ways. First, as a research contribution: it provides a strong baseline that wavCSE should compare against. If random weighting matches or exceeds CAGrad/Nash-MTL on wavCSE&#39;s tasks, this would be a notable finding. Second, as a practical candidate: for wavCSE&#39;s 3 tasks, RLW is the easiest possible intervention. If it works well, it saves the implementation complexity of more sophisticated methods.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Simplicity: trivially easy to implement and debug</li><li>Strong empirical performance across a wide range of benchmarks</li><li>Theoretical justification via implicit regularization perspective</li><li>No hyperparameters beyond Dirichlet shape (default alpha=1 works well)</li><li>Reveals important insight about role of stochasticity in MTL</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Random weighting increases gradient variance</li><li>Does not respond to training dynamics or task difficulty</li><li>Implicit regularization argument is suggestive but not rigorous</li><li>Underperforms best methods by 1-2% on some benchmarks</li><li>Primarily of scientific interest as baseline</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2 (3 tasks), RLW achieves 1.81% average improvement over uniform weighting, comparable to PCGrad (1.92%) and GradNorm (1.68%). On Office-31, RLW matches or exceeds all comparison methods.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Replace uniform weighting with Dirichlet(alpha=1) sampling each step</li><li>Train full wavCSE with RLW, keeping all other hyperparameters identical</li><li>Compute variance of per-task weights and correlate with task performance</li><li>Report per-task accuracy for all three tasks</li><li>Analyze whether RLW benefit comes from specific weights or increased noise</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Very Low. A single line of code: w = torch.distributions.Dirichlet(torch.ones(3)).sample(). No gradient computation changes, architecture changes, or extra forward passes.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="MTI-Net">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">MTI-Net</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Introduces cross-task attention at multiple resolution scales where tasks modulate each other&#39;s feature maps through learnable attention, enabling dense multi-scale task interactions rather than sharing a single feature representation.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Constructs a shared encoder backbone producing feature maps at multiple resolutions. Each task has its own decoder. The key innovation is the cross-task attention module inserted between encoder and decoder: for each pair of tasks (A, B), compute an attention map from task A&#39;s features to modulate task B&#39;s features. The interaction is symmetric but directional, computed at 4 resolution scales, fused across scales. Adds approximately 15-20% more parameters compared to hard parameter sharing.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>While wavCSE currently uses a single shared projector followed by task-specific heads, MTI-Net suggests an alternative: task-specific feature extractors that cross-attend to each other. Applied to wavCSE, each task (content, speaker, emotion) could have its own projector, and cross-attention modules allow the emotional content branch to attend to the speaker branch&#39;s features (which may carry prosodic information useful for emotion).</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Most architecturally ambitious paper surveyed</li><li>Cross-task attention is interpretable via attention maps</li><li>Comprehensive ablation studies with clear design guidelines</li><li>Strong empirical performance on NYUv2 benchmark</li><li>Naturally handles tasks with different spatial/temporal resolutions</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>High architectural complexity and parameter overhead</li><li>Designed for dense prediction tasks in CV — requires significant rethinking for speech</li><li>Cross-attention assumes 2D spatial structure</li><li>Training stability can be challenging</li><li>Does not directly address task imbalance or gradient conflict</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2, MTI-Net achieves 41.27% mIoU (vs 38.31% hard sharing), 0.5257 depth error (vs 0.5627), and 23.18° normal error (vs 25.01°). Cross-task attention improves all tasks simultaneously.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Create three task-specific projectors instead of single shared one</li><li>Implement 1D cross-attention module for utterance-level features</li><li>Design multi-scale variant using WavLM layers 8, 16, 24 as three scales</li><li>Add task-specific hidden layers and classification heads</li><li>Analyze cross-attention weights to determine best task pair interactions</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>High. Requires significant architectural redesign. No off-the-shelf implementation for speech/sequence models. Training stability requires careful tuning.</p>
+    </div>
+  </div>
+</div><div class="summary-card" data-paper="FairGrad">
+  <div class="summary-header" onclick="toggleSummary(this)">
+    <span class="summary-title">FairGrad</span>
+    <span class="summary-toggle">+</span>
+  </div>
+  <div class="summary-body">
+    <div class="summary-tldr"><strong>TL;DR:</strong> Introduces a fairness constraint into MTL optimization that prevents any task&#39;s performance from degrading below a specified threshold, using an alpha-fair utility formulation that generalizes both average-case and worst-case optimization.</div>
+    <div class="summary-section">
+      <h4>Key Method</h4>
+      <p>Formulates MTL as maximizing an alpha-fair utility function: U_alpha(L_1, ..., L_k) = sum_i (L_i^{1-alpha} - 1) / (1-alpha). The parameter alpha controls the fairness level: alpha=0 maximizes the sum (no fairness), alpha -&gt; infinity maximizes the minimum task performance (maximin), and alpha=1 corresponds to proportional fairness. Derives a practical gradient update rule: at each step, weight per-task gradients by w_i = L_i^{-alpha}. Provides convergence guarantees under standard assumptions.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Relevance to wavCSE</h4>
+      <p>FairGrad is directly relevant to wavCSE&#39;s task imbalance problem because it explicitly prevents any task from being &#39;left behind.&#39; The emotion task (4 classes) could easily be neglected if the optimizer prioritizes speaker (1251 classes) and content (12 classes). FairGrad&#39;s alpha-fair weighting automatically upweights the task with the worst relative performance. The alpha parameter gives the practitioner a dial to trade off average performance vs. worst-task performance.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Strengths</h4>
+      <ul><li>Principled fairness framework with clean theoretical properties</li><li>Single parameter alpha provides continuous fairness-efficiency tradeoff</li><li>Extremely simple to implement: one-line reweighting</li><li>Unifies uniform averaging, loss-proportional weighting, and worst-case optimization</li><li>Convergence guarantees with no additional computation per iteration</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Weaknesses / Limitations</h4>
+      <ul><li>Fairness constraint is soft — no hard threshold guarantee</li><li>Loss weight fluctuation with noisy losses and small batches</li><li>Assumes all tasks equally important a priori</li><li>Only tested on vision and tabular benchmarks</li><li>Different loss scales require normalization before applying weighting</li></ul>
+    </div>
+    <div class="summary-section">
+      <h4>Key Experimental Results</h4>
+      <p>On NYUv2 (3 tasks), FairGrad with alpha=1 improves worst-task performance by 3.5% over uniform averaging and 1.8% over PCGrad while maintaining comparable average performance. On Office-Home, reduces the best-worst performance gap by 40%.</p>
+    </div>
+    <div class="summary-section">
+      <h4>Integration Plan for wavCSE</h4>
+      <ol><li>Normalize per-task losses to common scale with running statistics</li><li>Implement FairGrad weighting: w_i = (normalized_loss_i)^{-alpha}</li><li>Sweep alpha over [0, 0.5, 1.0, 2.0, 5.0]</li><li>Track per-task loss curves to verify worst task receives increasing weight</li><li>Report Pareto frontier of average accuracy vs worst-task accuracy</li></ol>
+    </div>
+    <div class="summary-section">
+      <h4>Implementation Complexity</h4>
+      <p>Very Low. Requires only modifying the loss weighting. No architecture changes, gradient hooks, or extra forward passes.</p>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: DOWNLOAD LIST -->
+  <div class="section" id="download">
+    <h2>5. Download List</h2>
+
+    <h3>Tier 1 Papers (Priority Download)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Paper</th><th>Venue</th><th>arXiv / URL</th></tr></thead>
+        <tbody><tr><td>Grad-TAG</td><td>KDD 2024</td><td>2409.06091</td></tr><tr><td>TAG</td><td>NeurIPS 2021</td><td>2211.00288</td></tr><tr><td>Which Tasks Together</td><td>ICML 2020</td><td>1905.07575</td></tr><tr><td>CAGrad</td><td>NeurIPS 2021</td><td>2110.14048</td></tr><tr><td>Nash-MTL</td><td>ICML 2022</td><td>2202.08617</td></tr><tr><td>Recon</td><td>ICLR 2023</td><td>N/A (openreview)</td></tr><tr><td>AdaShare</td><td>CVPR 2020</td><td>1911.12190</td></tr><tr><td>ExcessMTL</td><td>ICML 2024</td><td>2405.12003</td></tr><tr><td>PCGrad</td><td>NeurIPS 2020</td><td>2001.06782</td></tr><tr><td>RLW</td><td>TMLR 2022</td><td>2111.10603</td></tr><tr><td>MTI-Net</td><td>ECCV 2020</td><td>2003.12908</td></tr><tr><td>FairGrad</td><td>ICML 2024</td><td>2402.15698</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3>Tier 2 Papers</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Paper</th><th>Venue</th><th>arXiv / URL</th></tr></thead>
+        <tbody><tr><td>MetaLink</td><td>ICLR 2022</td><td>2303.07666</td></tr><tr><td>MIRTL</td><td>KBS 2024</td><td>N/A (sciencedirect)</td></tr><tr><td>Output-Level Task Relatedness</td><td>arXiv 2024</td><td>2404.00885</td></tr><tr><td>Task Relationship Matrix</td><td>ECCV 2020</td><td>2007.07579</td></tr><tr><td>TaskExpert</td><td>ICCV 2023</td><td>2211.13999</td></tr><tr><td>Aligned-MTL</td><td>CVPR 2023</td><td>2303.11483</td></tr><tr><td>IMTL</td><td>ICLR 2021</td><td>2010.01096</td></tr><tr><td>GradVac</td><td>NeurIPS 2021</td><td>2106.00108</td></tr><tr><td>FAMO</td><td>NeurIPS 2023</td><td>2310.03467</td></tr><tr><td>Rotograd</td><td>NeurIPS 2022</td><td>2110.11132</td></tr><tr><td>FairBranch</td><td>IJCNN 2024</td><td>2310.13746</td></tr><tr><td>Self-Auxiliaries</td><td>arXiv 2024</td><td>2410.15875</td></tr><tr><td>MultiBalance</td><td>arXiv 2024</td><td>2411.11871</td></tr><tr><td>STCH</td><td>ICML 2024</td><td>2406.05285</td></tr><tr><td>Task-Specific Feature Learning</td><td>AAAI 2021</td><td>N/A (search arxiv)</td></tr><tr><td>MHR</td><td>NeurIPS 2023</td><td>N/A (openreview)</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3>Key Surveys (Recommended)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Paper</th><th>Venue</th><th>URL</th></tr></thead>
+        <tbody>
+          <tr><td>Yu et al. (2024) — Unleashing the Power of MTL</td><td>arXiv 2024</td><td>https://arxiv.org/abs/2404.09385 (check exact ID)</td></tr>
+          <tr><td>Chen et al. (2024) — MTL in NLP: An Overview</td><td>ACM CSUR 2024</td><td>Search ACM DL</td></tr>
+          <tr><td>Upadhyay et al. (2024) — Sharing to Learn</td><td>IEEE Access 2024</td><td>Search IEEE Xplore</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Download Tips</h3>
+    <ol>
+      <li>Most papers on arXiv → use "Download PDF" or <code>wget https://arxiv.org/pdf/{ID}.pdf</code></li>
+      <li>Conference papers → check openreview.net (ICLR, NeurIPS) or CVF (CVPR, ICCV, ECCV)</li>
+      <li>Paywalled → check author homepages or use institutional access</li>
+      <li>File naming convention: <code>{Year}_{FirstAuthor}_{ShortTitle}.pdf</code></li>
+    </ol>
+  </div>
+
+  <p style="text-align:center;color:var(--text2);font-size:0.85rem;padding:2rem 0;border-top:1px solid var(--border);margin-top:2rem">
+    Generated 2026-07-19 — <a href="#overview">Back to top</a>
+  </p>
+</div>
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&#8593;</button>
+
+<script>
+  // Toggle summary cards
+  function toggleSummary(header) {
+    header.parentElement.classList.toggle('open');
+    var toggle = header.querySelector('.summary-toggle');
+    toggle.textContent = header.parentElement.classList.contains('open') ? '−' : '+';
+  }
+
+  // Filter summaries
+  function filterSummaries(query) {
+    var q = query.toLowerCase().trim();
+    var cards = document.querySelectorAll('#summaries-container .summary-card');
+    var count = 0;
+    cards.forEach(function(c) {
+      var text = c.textContent.toLowerCase();
+      var match = !q || text.indexOf(q) !== -1;
+      c.style.display = match ? '' : 'none';
+      if (match) count++;
+    });
+    document.getElementById('searchCount').textContent = q ? 'Showing ' + count + ' of ' + cards.length + ' summaries' : '';
+  }
+
+  // Show/hide back-to-top button
+  window.addEventListener('scroll', function() {
+    var btn = document.getElementById('backToTop');
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+
+  // Mobile sidebar
+  document.querySelector('.sidebar-toggle')?.addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('mobile-open');
+  });
+
+  // Close sidebar on mobile when nav link clicked
+  document.querySelectorAll('.sidebar nav a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('mobile-open');
+    });
+  });
+
+  // Open first summary by default
+  document.addEventListener('DOMContentLoaded', function() {
+    var first = document.querySelector('.summary-card');
+    if (first) {
+      first.classList.add('open');
+      first.querySelector('.summary-toggle').textContent = '−';
+    }
+  });
+</script>
+</body>
+</html>

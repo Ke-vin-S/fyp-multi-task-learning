@@ -1,0 +1,188 @@
+<mxfile host="app.diagrams.net" version="26.0.0">
+  <diagram id="cgc-arch" name="CGC Architecture">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" pageWidth="950" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Legend -->
+        <mxCell id="legend-title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="30" y="560" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-shared" value="Shared" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="585" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-taska" value="Task A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="120" y="585" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-taskb" value="Task B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="210" y="585" width="80" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 0: Input ==================== -->
+        <mxCell id="input" value="&lt;b&gt;Input x&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="390" y="30" width="140" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 1: Experts ==================== -->
+        <!-- Shared Experts -->
+        <mxCell id="shared-1" value="&lt;b&gt;Shared&lt;br&gt;Expert 1&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="130" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="shared-2" value="&lt;b&gt;Shared&lt;br&gt;Expert 2&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="220" y="140" width="130" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Task-A Specific Expert -->
+        <mxCell id="spec-a" value="&lt;b&gt;Task-A&lt;br&gt;Expert&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="140" width="130" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Task-B Specific Expert -->
+        <mxCell id="spec-b" value="&lt;b&gt;Task-B&lt;br&gt;Expert&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="140" width="130" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Labels above expert groups -->
+        <mxCell id="label-shared" value="&lt;i&gt;K shared experts&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#6C8EBF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="112" width="270" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="label-spec-a" value="&lt;i&gt;M_A expert&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#82B366;" vertex="1" parent="1">
+          <mxGeometry x="470" y="112" width="130" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="label-spec-b" value="&lt;i&gt;M_B expert&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#D79B00;" vertex="1" parent="1">
+          <mxGeometry x="720" y="112" width="130" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 2: Gates ==================== -->
+        <mxCell id="gate-a" value="&lt;b&gt;Gate A&lt;/b&gt;&lt;br&gt;Linear(K+M&lt;sub&gt;A&lt;/sub&gt;) → Softmax" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=11;arcSize=20;" vertex="1" parent="1">
+          <mxGeometry x="410" y="270" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="gate-b" value="&lt;b&gt;Gate B&lt;/b&gt;&lt;br&gt;Linear(K+M&lt;sub&gt;B&lt;/sub&gt;) → Softmax" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=11;arcSize=20;" vertex="1" parent="1">
+          <mxGeometry x="660" y="270" width="220" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 3: Einsum ==================== -->
+        <mxCell id="rep-a" value="&lt;b&gt;Weighted Sum&lt;/b&gt;&lt;br&gt;einsum('ij..., ji → j...')" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="380" width="220" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="rep-b" value="&lt;b&gt;Weighted Sum&lt;/b&gt;&lt;br&gt;einsum('ij..., ji → j...')" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="380" width="220" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 4: Decoders ==================== -->
+        <mxCell id="dec-a" value="&lt;b&gt;Decoder A&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="410" y="480" width="220" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="dec-b" value="&lt;b&gt;Decoder B&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="480" width="220" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ROW 5: Outputs ==================== -->
+        <mxCell id="out-a" value="&lt;b&gt;ŷ&lt;sub&gt;A&lt;/sub&gt;&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=13;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="475" y="570" width="90" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="out-b" value="&lt;b&gt;ŷ&lt;sub&gt;B&lt;/sub&gt;&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=13;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="725" y="570" width="90" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== EDGES ==================== -->
+
+        <!-- Input to Shared Experts -->
+        <mxCell id="e-in-s1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="input" target="shared-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-in-s2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="input" target="shared-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Input to Task-Specific Experts -->
+        <mxCell id="e-in-a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#82B366;" edge="1" parent="1" source="input" target="spec-a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-in-b" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#D79B00;" edge="1" parent="1" source="input" target="spec-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Shared Experts to Gate A -->
+        <mxCell id="e-s1-ga" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="shared-1" target="gate-a">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="125" y="240" />
+              <mxPoint x="440" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-s2-ga" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="shared-2" target="gate-a">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="240" />
+              <mxPoint x="440" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Shared Experts to Gate B -->
+        <mxCell id="e-s1-gb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="shared-1" target="gate-b">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="125" y="240" />
+              <mxPoint x="690" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-s2-gb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="shared-2" target="gate-b">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="240" />
+              <mxPoint x="690" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Task-Specific to Gates -->
+        <mxCell id="e-a-ga" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#82B366;" edge="1" parent="1" source="spec-a" target="gate-a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-b-gb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#D79B00;" edge="1" parent="1" source="spec-b" target="gate-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Gate to Einsum -->
+        <mxCell id="e-ga-ra" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#82B366;" edge="1" parent="1" source="gate-a" target="rep-a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gb-rb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#D79B00;" edge="1" parent="1" source="gate-b" target="rep-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Einsum to Decoder -->
+        <mxCell id="e-ra-da" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#82B366;" edge="1" parent="1" source="rep-a" target="dec-a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rb-db" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#D79B00;" edge="1" parent="1" source="rep-b" target="dec-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decoder to Output -->
+        <mxCell id="e-da-oa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#82B366;" edge="1" parent="1" source="dec-a" target="out-a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-db-ob" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;html=1;strokeColor=#D79B00;" edge="1" parent="1" source="dec-b" target="out-b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Annotation: CGC extends MMoE -->
+        <mxCell id="note" value="&lt;b&gt;CGC = MMoE +&lt;br&gt;Task-Specific Experts&lt;/b&gt;&lt;br&gt;Each gate selects over&lt;br&gt;&lt;i&gt;shared + its own specific&lt;/i&gt; experts." style="shape=note;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="260" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Annotation arrow -->
+        <mxCell id="e-note" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=none;html=1;strokeColor=#D6B656;dashed=1;dashPattern=4 4;" edge="1" parent="1" source="note" target="shared-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
