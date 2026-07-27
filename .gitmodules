@@ -1,0 +1,6 @@
+[submodule "wavCSE/wavCSE"]
+	path = wavCSE/wavCSE
+	url = https://github.com/Synergy-io/wavCSE.git
+[submodule "LibMTL/LibMTL"]
+	path = LibMTL/LibMTL
+	url = https://github.com/Synergy-io/LibMTL.git
