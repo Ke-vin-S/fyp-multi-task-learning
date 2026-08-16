@@ -1,2 +1,0 @@
-from .tsm_trainer import MultiTasksModelTrainerTSM
-from .pmr_trainer import MultiTasksModelTrainerPMR

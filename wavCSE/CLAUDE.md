@@ -20,26 +20,33 @@ wavCSE/
 │   │   ├── model/            # load_upstream.py, wavlm/WavLM.py
 │   │   ├── pooling/          # 6 frame-pooling strategies
 │   │   └── utils/            # Config, logging, device, I/O helpers
-│   └── downstream/           # Stage 2: Multi-task training + evaluation
-│       ├── main.py
-│       ├── configs/
-│       ├── dataset/          # Embedding loaders, custom DataLoader
-│       ├── model/            # DownstreamMultiTaskModel
-│       ├── pooling/          # 10 layer-pooling strategies
-│       ├── trainer/          # MultiTasksModelTrainer
-│       ├── evaluator/        # MultiTasksModelEvaluator
-│       └── utils/
+│   ├── downstream/           # Stage 2: Multi-task training + evaluation
+│   │   ├── main.py
+│   │   ├── configs/
+│   │   ├── dataset/          # Embedding loaders, custom DataLoader
+│   │   ├── model/            # DownstreamMultiTaskModel
+│   │   ├── pooling/          # 10 layer-pooling strategies
+│   │   ├── trainer/          # MultiTasksModelTrainer
+│   │   ├── evaluator/        # MultiTasksModelEvaluator
+│   │   └── utils/
+│   └── improvements/         # Our new MTL architectures — lives INSIDE the git
+│       ├── run_improvements.py   #   repo (sibling of upstream/downstream), not
+│       ├── taskrelation/         #   in this wrapper folder. One folder per
+│       │   ├── models/           #   owner (see "Our MTL Improvements" below).
+│       │   ├── trainers/
+│       │   └── configs/
+│       ├── lowrank/          # Chehan — not yet implemented
+│       ├── clustering/       # Induwara — not yet implemented
+│       └── decomposition/    # Pathumi — not yet implemented
 ├── docs/                     # Paper summary, architecture docs, FYP context
 │   ├── 01-paper-summary.md
 │   ├── 02-codebase-architecture.md
 │   ├── 03-fyp-project-context.md
 │   ├── 04-presentation-plan.md
 │   └── 05-quick-reference.md
-├── improvements/             # Our new MTL architectures
-│   ├── run_improvements.py
-│   ├── configs/              # gbc_config.yml, pmr_config.yml, tsm_config.yml
-│   ├── models/               # gbc_model.py, pmr_model.py, tsm_model.py
-│   └── trainers/             # pmr_trainer.py, tsm_trainer.py
+├── improvements/docs/        # Presentation assets only (slides, diagrams) —
+│                              # the code itself lives in wavCSE/improvements/
+│                              # above, not here. See gotcha below.
 ├── papers/                   # Published PDFs (not tracked)
 └── WAVCSE_ANALYSIS.md        # Deep-dive reference for wavCSE internals
 ```
@@ -102,15 +109,19 @@ python main.py --config configs/build_model.yml
 
 ## Our MTL Improvements
 
-Three architectures in `improvements/` extending the downstream model:
+`wavCSE/wavCSE/improvements/` holds our parameter-based MTL architectures, extending the downstream model. Structured **by owner**, not by file type — each of the 4 team members gets their own folder (`taskrelation/`, `lowrank/`, `clustering/`, `decomposition/`) containing their own `models/`, `trainers/`, `configs/`. This keeps each person's branch touching only their own directory, so branches merge cleanly instead of colliding on shared `models/`/`configs/`/`trainers/` folders. See `structure/improvements-by-owner` branch for the migration.
+
+**`taskrelation/` (Kevin)** — three exploratory architectures, all task-relation-learning variants:
 
 | Model | File | Description |
 | --- | --- | --- |
-| **PMR** | `models/pmr_model.py` | Prototype-based Mixture of Experts with Routing |
-| **TSM** | `models/tsm_model.py` | Task-Specific Modules |
-| **GBC** | `models/gbc_model.py` | Gradient-Balanced Curriculum |
+| **GBC** | `taskrelation/models/gbc_model.py` | Global Bias Coupling (Zhang et al. 2010) — shared global bias couples all task heads |
+| **TSM** | `taskrelation/models/tsm_model.py` | Task Structure Matrix (Ciliberto et al. 2015) — latent classifier basis + learned sparse structure matrix |
+| **PMR** | `taskrelation/models/pmr_model.py` | Precision Matrix Regularization (Gonçalves et al. 2016) — sparse precision matrix over task parameters |
 
-Each has a matching config in `improvements/configs/` and trainer in `improvements/trainers/`. Entry point: `improvements/run_improvements.py`.
+TSM and PMR have matching trainers in `taskrelation/trainers/` (alternating-minimization training loops); GBC uses the standard trainer. Configs in `taskrelation/configs/`. Entry point: `improvements/run_improvements.py --model [gbc|tsm|pmr|original|all]`.
+
+`lowrank/` (Chehan), `clustering/` (Induwara), `decomposition/` (Pathumi) are scaffolded (folder + README) but not yet implemented.
 
 ## Gotchas
 
@@ -119,3 +130,5 @@ Each has a matching config in `improvements/configs/` and trainer in `improvemen
 - **Upstream/downstream are decoupled by `.pt` files** — if you change pooling config, you must re-extract embeddings before downstream sees the change.
 - **Two environments**: conda env from `environment.yml` and the `.venv/` at the root — verify which one is active.
 - **`wavCSE/` is the git repo** — run git commands from there, not from this management folder.
+- **`improvements/` code lives in the git repo (`wavCSE/wavCSE/improvements/`), not in this wrapper folder.** `wavCSE/improvements/` (this folder, one level up) holds only presentation assets (`docs/` — slides, diagrams, transcripts). It's easy to edit the wrong copy — check which `improvements/` you're in.
+- **Running `run_improvements.py` requires `cwd` = `wavCSE/wavCSE/`** (the git repo root) — its `from improvements.taskrelation....` imports only resolve with `improvements/`'s parent on `sys.path`.
